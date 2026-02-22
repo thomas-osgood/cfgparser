@@ -1,0 +1,3 @@
+{
+  "rust-analyzer.linkedProjects": ["cfgparser_core/Cargo.toml"]
+}
