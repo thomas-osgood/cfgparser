@@ -1,17 +1,47 @@
 use base64::{self, Engine};
 use cfgparser_encryption;
 
+mod models;
+
 #[no_mangle]
 pub extern "C" fn read_cfg() {
     let key: &[u8] = "test".as_bytes();
-    let msg = base64::engine::general_purpose::STANDARD_NO_PAD.encode("hello");
+    let msg = base64::engine::general_purpose::STANDARD_NO_PAD
+        .encode("{\"host\": \"localhost\", \"port\": 80}");
 
     let ciphertext: Vec<u8> =
         cfgparser_encryption::xor::engine::encrypt_decrypt(key.to_vec(), msg.into());
 
+    let decoded: String;
     match transform_payload(key, &ciphertext) {
-        Ok(decoded) => println!("DECODED: {:#}", String::from_utf8_lossy(&decoded)),
-        Err(e) => println!("ERROR DECODING: {:#}", e),
+        Ok(result) => decoded = String::from_utf8_lossy(&result).to_string(),
+        Err(e) => {
+            println!("ERROR DECODING: {:#}", e);
+            return;
+        }
+    }
+
+    println!("DECODED: {:#}", decoded);
+
+    let configuration: models::core::Configuration = match deserialize_payload(decoded) {
+        Ok(result) => result,
+        Err(e) => {
+            println!("ERROR DESERIALIZING JSON: {:#}", e);
+            return;
+        }
+    };
+
+    println!("CONFIGURATION: {:#?}", configuration);
+}
+
+/// function designed to JSON deserialize a given string into
+/// a Configuration struct and return the struct.
+///
+/// if there is an error, a `serde_json::Error` will be returned.
+fn deserialize_payload(payload: String) -> Result<models::core::Configuration, serde_json::Error> {
+    match serde_json::from_str(&payload) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(e),
     }
 }
 
