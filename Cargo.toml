@@ -1,0 +1,2 @@
+[workspace]
+members = ["cfgparser_core", "cfgparser_encryption"]
