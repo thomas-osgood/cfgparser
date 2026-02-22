@@ -4,7 +4,7 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    fn new(host: Vec<u8>, port: i8) -> Configuration {
+    pub fn new(host: Vec<u8>, port: i8) -> Configuration {
         Configuration {
             host: host,
             port: port,
