@@ -1,3 +1,4 @@
+#[derive(serde::Deserialize, Debug)]
 pub struct Configuration {
     pub host: Vec<u8>,
     pub port: i8,
