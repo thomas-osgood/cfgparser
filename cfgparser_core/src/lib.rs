@@ -32,6 +32,9 @@ pub extern "C" fn read_cfg() {
     };
 
     println!("CONFIGURATION: {:#?}", configuration);
+
+    let address: String = format!("{}:{}", configuration.host, configuration.port);
+    println!("ADDRESS: {:#}", address);
 }
 
 /// function designed to JSON deserialize a given string into
