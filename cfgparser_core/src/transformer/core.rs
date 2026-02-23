@@ -1,5 +1,3 @@
-use crate::models;
-
 use base64::{self, Engine};
 
 /// function designed to JSON deserialize a given string into
@@ -8,7 +6,7 @@ use base64::{self, Engine};
 /// if there is an error, a `serde_json::Error` will be returned.
 pub fn deserialize_payload(
     payload: String,
-) -> Result<models::core::Configuration, serde_json::Error> {
+) -> Result<crate::models::core::Configuration, serde_json::Error> {
     match serde_json::from_str(&payload) {
         Ok(result) => Ok(result),
         Err(e) => Err(e),
