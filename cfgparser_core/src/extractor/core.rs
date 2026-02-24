@@ -14,8 +14,6 @@ pub fn extract_cfg_bytes() -> std::io::Result<Vec<u8>> {
     fptr.read_exact(&mut buf_sz)?;
 
     // convert the bytes read into i64.
-    //
-    // TODO: check to make sure it should be i64 and not u64.
     let sz_payload: i64 = i64::from_be_bytes(buf_sz);
 
     // calculate how far back to go from the end of the file
