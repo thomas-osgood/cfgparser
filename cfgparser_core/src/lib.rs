@@ -8,8 +8,22 @@ mod transformer;
 /// end of the binary, XOR decrypt it, Base64 decode,
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
-pub extern "C" fn read_cfg() {
-    let key: &[u8] = "test".as_bytes();
+pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
+    // check to make sure the key that is input is not null.
+    // if it is, return from the function.
+    if raw_key.is_null() {
+        return;
+    }
+
+    // convert the input to a CStr.
+    //
+    // this borrows the value from the memory that is owned
+    // by the caller.
+    let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
+
+    // convert the CStr holding the key to bytes so it can
+    // be used later on.
+    let key: &[u8] = key_cstr.to_bytes();
 
     // read configuration bytes from current binary.
     let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
