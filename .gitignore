@@ -21,3 +21,5 @@ Cargo.lock
 
 # ignore C Proof Of Conecept (POC) program made during dev
 c_poc/
+
+test.py
