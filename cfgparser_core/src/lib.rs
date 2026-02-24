@@ -9,21 +9,23 @@ mod transformer;
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
-    // check to make sure the key that is input is not null.
-    // if it is, return from the function.
+    let key: &[u8];
+
+    // if null is passed in as the key, use q as the default;
+    // otherwise use the char* key passed in.
     if raw_key.is_null() {
-        return;
+        key = "q".as_bytes();
+    } else {
+        // convert the input to a CStr.
+        //
+        // this borrows the value from the memory that is owned
+        // by the caller.
+        let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
+
+        // convert the CStr holding the key to bytes so it can
+        // be used later on.
+        key = key_cstr.to_bytes();
     }
-
-    // convert the input to a CStr.
-    //
-    // this borrows the value from the memory that is owned
-    // by the caller.
-    let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
-
-    // convert the CStr holding the key to bytes so it can
-    // be used later on.
-    let key: &[u8] = key_cstr.to_bytes();
 
     // read configuration bytes from current binary.
     let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
