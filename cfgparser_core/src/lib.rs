@@ -1,6 +1,4 @@
-use base64::{self, Engine};
-use cfgparser_encryption;
-
+mod extractor;
 mod models;
 mod transformer;
 
@@ -12,14 +10,18 @@ mod transformer;
 /// Configuration struct that resulted from the JSON decoding.
 pub extern "C" fn read_cfg() {
     let key: &[u8] = "test".as_bytes();
-    let msg = base64::engine::general_purpose::STANDARD_NO_PAD
-        .encode("{\"host\": \"localhost\", \"port\": 80}");
 
-    let ciphertext: Vec<u8> =
-        cfgparser_encryption::xor::engine::encrypt_decrypt(key.to_vec(), msg.into());
+    // read configuration bytes from current binary.
+    let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
+        Ok(result) => result,
+        Err(e) => {
+            println!("ERROR READING CFG BYTES: {:#}", e);
+            return;
+        }
+    };
 
     let decoded: String;
-    match transformer::core::transform_payload(key, &ciphertext) {
+    match transformer::core::transform_payload(key, &cfg_bytes) {
         Ok(result) => decoded = String::from_utf8_lossy(&result).to_string(),
         Err(e) => {
             println!("ERROR DECODING: {:#}", e);
@@ -27,6 +29,7 @@ pub extern "C" fn read_cfg() {
         }
     }
 
+    // DEVELOPMENT ONLY: remove before release
     println!("DECODED: {:#}", decoded);
 
     let configuration: models::core::Configuration =
@@ -43,9 +46,3 @@ pub extern "C" fn read_cfg() {
     let address: String = format!("{}:{}", configuration.host, configuration.port);
     println!("ADDRESS: {:#}", address);
 }
-
-/// function designed to read the end of the current binary
-/// and extract the configuration bytes. these bytes will then
-/// be processed in a later step to transform them into a
-/// Configuration struct to allow access to all necessary information.
-fn read_cfg_bytes() {}
