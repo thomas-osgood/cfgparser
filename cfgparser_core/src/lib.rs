@@ -62,3 +62,17 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
     let address: String = format!("{}:{}", configuration.host, configuration.port);
     println!("ADDRESS: {:#}", address);
 }
+
+#[no_mangle]
+/// function designed to safely free a char* pointer that
+/// has been allocated by rust.
+///
+/// this should be called when the caller is done with the
+/// memory, similar to how free(ptr) is used in C.
+pub extern "C" fn free_memory(ptr: *mut std::ffi::c_char) {
+    if ptr.is_null() {
+        return;
+    }
+
+    let _ = unsafe { std::ffi::CString::from_raw(ptr) };
+}
