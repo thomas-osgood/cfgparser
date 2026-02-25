@@ -47,9 +47,6 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
         }
     };
 
-    // DEVELOPMENT ONLY: remove before release
-    println!("DECODED: {:#}", decoded);
-
     // JSON deserialize the string acquired from the process above into
     // a Configuration struct.
     let configuration: models::core::Configuration =
@@ -61,10 +58,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
             }
         };
 
-    println!("CONFIGURATION: {:#?}", configuration);
-
     let address: String = format!("{}:{}", configuration.host, configuration.port);
-    println!("ADDRESS: {:#}", address);
 
     // convert the String (rust) into a CString so it can be converted
     // into a char* and returned.
@@ -87,8 +81,13 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 /// memory, similar to how free(ptr) is used in C.
 pub extern "C" fn free_memory(ptr: *mut std::ffi::c_char) {
     if ptr.is_null() {
+        // comment for debug/dev only
+        println!("pointer is null. nothing to free.");
         return;
     }
 
     let _ = unsafe { std::ffi::CString::from_raw(ptr) };
+
+    // comment for debug/dev only
+    println!("memory successfully freed!");
 }
