@@ -8,7 +8,7 @@ mod transformer;
 /// end of the binary, XOR decrypt it, Base64 decode,
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
-pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
+pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
     let key: &[u8];
 
     // if null is passed in as the key, use q as the default;
@@ -32,7 +32,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
         Ok(result) => result,
         Err(e) => {
             println!("ERROR READING CFG BYTES: {:#}", e);
-            return;
+            return std::ptr::null();
         }
     };
 
@@ -43,7 +43,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
         Ok(result) => String::from_utf8_lossy(&result).to_string(),
         Err(e) => {
             println!("ERROR DECODING: {:#}", e);
-            return;
+            return std::ptr::null();
         }
     };
 
@@ -57,7 +57,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
             Ok(result) => result,
             Err(e) => {
                 println!("ERROR DESERIALIZING JSON: {:#}", e);
-                return;
+                return std::ptr::null();
             }
         };
 
@@ -65,6 +65,18 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
 
     let address: String = format!("{}:{}", configuration.host, configuration.port);
     println!("ADDRESS: {:#}", address);
+
+    // convert the String (rust) into a CString so it can be converted
+    // into a char* and returned.
+    let address_cstring: std::ffi::CString = match std::ffi::CString::new(address) {
+        Ok(result) => result,
+        Err(e) => {
+            println!("Error converting to CString: {:#?}", e);
+            return std::ptr::null();
+        }
+    };
+
+    address_cstring.into_raw()
 }
 
 #[no_mangle]
