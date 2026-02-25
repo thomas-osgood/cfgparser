@@ -36,14 +36,16 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
         }
     };
 
-    let decoded: String;
-    match transformer::core::transform_payload(key, &cfg_bytes) {
-        Ok(result) => decoded = String::from_utf8_lossy(&result).to_string(),
+    // XOR decrypt and base64 decode the bytes extracted in the previous
+    // step to get a string representation of the JSON structure holding
+    // the configuration information.
+    let decoded: String = match transformer::core::transform_payload(key, &cfg_bytes) {
+        Ok(result) => String::from_utf8_lossy(&result).to_string(),
         Err(e) => {
             println!("ERROR DECODING: {:#}", e);
             return;
         }
-    }
+    };
 
     // DEVELOPMENT ONLY: remove before release
     println!("DECODED: {:#}", decoded);
