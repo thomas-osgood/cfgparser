@@ -50,6 +50,8 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) {
     // DEVELOPMENT ONLY: remove before release
     println!("DECODED: {:#}", decoded);
 
+    // JSON deserialize the string acquired from the process above into
+    // a Configuration struct.
     let configuration: models::core::Configuration =
         match transformer::core::deserialize_payload(decoded) {
             Ok(result) => result,
