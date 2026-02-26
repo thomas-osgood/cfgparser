@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod unit_tests;
+
 /// function designed to XOR encrypt/decrypt data using a given key.
 pub fn encrypt_decrypt(key: Vec<u8>, data: Vec<u8>) -> Vec<u8> {
     let key_len: usize = key.len();
