@@ -1,6 +1,8 @@
 use super::*;
 
 #[test]
+/// test designed to make sure the encrypt function (which uses the
+/// rotate and is_letter functions) logic works as expected.
 fn test_encrypt() {
     let key: Vec<u8> = "there".to_string().into_bytes();
     let plaintext: Vec<u8> = "hello everybody".to_string().into_bytes();
@@ -12,6 +14,9 @@ fn test_encrypt() {
 }
 
 #[test]
+/// test designed to make sure the is_letter function works as
+/// expected and is able to determine if a given character is
+/// in the alphabet.
 fn test_isletter() {
     assert_eq!(is_letter(b'a'), true);
     assert_eq!(is_letter(b'z'), true);
@@ -24,6 +29,7 @@ fn test_isletter() {
 }
 
 #[test]
+/// test designed to make sure the rotate function works as expected.
 fn test_rotate() {
     assert_eq!(rotate(b'a', b'a'), b'a');
     assert_eq!(rotate(b'm', b'c'), b'o');
