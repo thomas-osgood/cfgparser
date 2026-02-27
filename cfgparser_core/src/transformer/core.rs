@@ -1,5 +1,8 @@
 use base64::{self, Engine};
 
+#[cfg(test)]
+mod unit_tests;
+
 /// function designed to JSON deserialize a given string into
 /// a Configuration struct and return the struct.
 ///
