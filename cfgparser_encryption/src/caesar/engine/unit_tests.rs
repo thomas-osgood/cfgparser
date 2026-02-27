@@ -34,4 +34,7 @@ fn test_rotate() {
     assert_eq!(rotate(b'a', b'a'), b'a');
     assert_eq!(rotate(b'm', b'c'), b'o');
     assert_eq!(rotate(b'm', b'y'), b'k');
+    assert_eq!(rotate(b'-', b'x'), b'-');
+    assert_eq!(rotate(b'/', b'd'), b'/');
+    assert_eq!(rotate(b'5', b'd'), b'5');
 }
