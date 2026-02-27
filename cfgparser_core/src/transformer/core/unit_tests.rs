@@ -19,6 +19,12 @@ fn test_deserialize_payload() {
 }
 
 #[test]
+/// function designed to test the transform_payload function
+/// that XOR decrypts and base64 decodes the payload bytes.
+///
+/// the hard-coded "message" that is going to be transformed
+/// into plaintext has been base64 encoded and XOR encrypted
+/// using tools outside of rust.
 fn test_transform_payload() {
     let key: &str = "testkey";
     let expected: String = "This is a decrypted message".to_string();
