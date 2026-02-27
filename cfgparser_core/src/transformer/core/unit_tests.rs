@@ -1,6 +1,9 @@
 use super::*;
 
 #[test]
+/// function designed to test the JSON deserialization
+/// functionality of deserialize_payload. this function is
+/// designed to deserialize a string into a Configuration struct.
 fn test_deserialize_payload() {
     let expected: crate::models::core::Configuration =
         crate::models::core::Configuration::new("localhost".to_string(), 443);
