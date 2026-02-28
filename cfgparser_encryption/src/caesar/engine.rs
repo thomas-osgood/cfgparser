@@ -15,7 +15,7 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
     }
 
     for letter in key {
-        if (letter >= LOWER_A && letter <= LOWER_Z) || (letter >= UPPER_A && letter <= UPPER_Z) {
+        if !is_letter(letter) {
             return false;
         }
     }
@@ -30,6 +30,8 @@ pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
     let mut ciphertext: Vec<u8> = vec![];
     let mut key_pos: usize = 0;
     let len_key = key.len();
+
+    if !is_valid_key(key.clone()) {}
 
     for (_, current) in plaintext.iter().enumerate() {
         // perform rotation and add result to ciphertext.
