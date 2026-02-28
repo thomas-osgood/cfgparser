@@ -29,6 +29,18 @@ fn test_isletter() {
 }
 
 #[test]
+/// test designed to make sure the is_valid_key function works
+/// as expected and is able to determine if a given key contains
+/// one or more chars that are not in the alphabet and is not
+/// an empty vector.
+fn test_isvalidkey() {
+    assert_eq!(is_valid_key("testkey".into()), true);
+    assert_eq!(is_valid_key("TESTKEY".into()), true);
+    assert_eq!(is_valid_key("i am a key".into()), false);
+    assert_eq!(is_valid_key("123489".into()), false);
+}
+
+#[test]
 /// test designed to make sure the rotate function works as expected.
 fn test_rotate() {
     assert_eq!(rotate(b'a', b'a'), b'a');
