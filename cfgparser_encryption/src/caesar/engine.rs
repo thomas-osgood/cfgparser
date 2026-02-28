@@ -7,6 +7,21 @@ const LOWER_Z: u8 = b'z' + 1;
 const UPPER_A: u8 = b'A';
 const UPPER_Z: u8 = b'Z' + 1;
 
+/// function designed to take in a key and determine whether it
+/// is a valid caesar/viginere cipher key.
+pub fn is_valid_key(key: Vec<u8>) -> bool {
+    if key.len() < 1 {
+        return false;
+    }
+
+    for letter in key {
+        if (letter >= LOWER_A && letter <= LOWER_Z) || (letter >= UPPER_A && letter <= UPPER_Z) {
+            return false;
+        }
+    }
+    true
+}
+
 /// function designed to implement a viginere cipher.
 ///
 /// this will take in plaintext and a key and rotate each letter
