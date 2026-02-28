@@ -1,3 +1,28 @@
+//! this crate provides functions that allow for the extraction and
+//! usage of a malleable configuration that has been embedded within
+//! the binary itself.
+//!
+//! this includes simple encryption (XOR) and base64 encoding, along
+//! with expecting a custom structure for the embedded configuration.
+//!
+//! embedded data structure:
+//!
+//! [N bytes of encrypted data][8 bytes holding length N]
+//!
+//! functions of note:
+//!
+//! 1. read() - rust function that will extract and process the config bytes
+//! then return a Configuration struct (or error). meant to be called by
+//! other rust programs.
+//!
+//! 2. read_cfg() - function designed to be part of a shared object or DLL
+//! that can be used by C, Python, etc programs. this returns a char* holding
+//! the "address:port" from the configuration.
+//!
+//! 3. free_memory() - function designed to free the char* created by read_cfg()
+//! because the memory is owned by rust and must be freed by rust when the caller
+//! is done with it. this is similar to the free() function in C.
+
 mod extractor;
 mod models;
 mod transformer;
