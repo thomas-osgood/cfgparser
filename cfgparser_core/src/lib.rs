@@ -92,13 +92,8 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 /// memory, similar to how free(ptr) is used in C.
 pub extern "C" fn free_memory(ptr: *mut std::ffi::c_char) {
     if ptr.is_null() {
-        // comment for debug/dev only
-        println!("pointer is null. nothing to free.");
         return;
     }
 
     let _ = unsafe { std::ffi::CString::from_raw(ptr) };
-
-    // comment for debug/dev only
-    println!("memory successfully freed!");
 }
