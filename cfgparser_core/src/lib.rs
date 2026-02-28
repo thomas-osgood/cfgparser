@@ -55,36 +55,14 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
         key = key_cstr.to_bytes();
     }
 
-    // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
+    // read the Configuration from the current binary.
+    let configuration: models::core::Configuration = match read(key) {
         Ok(result) => result,
         Err(e) => {
-            println!("ERROR READING CFG BYTES: {:#}", e);
+            println!("ERROR READING CONFIG: {:#}", e);
             return std::ptr::null();
         }
     };
-
-    // XOR decrypt and base64 decode the bytes extracted in the previous
-    // step to get a string representation of the JSON structure holding
-    // the configuration information.
-    let decoded: String = match transformer::core::transform_payload(key, &cfg_bytes) {
-        Ok(result) => String::from_utf8_lossy(&result).to_string(),
-        Err(e) => {
-            println!("ERROR DECODING: {:#}", e);
-            return std::ptr::null();
-        }
-    };
-
-    // JSON deserialize the string acquired from the process above into
-    // a Configuration struct.
-    let configuration: models::core::Configuration =
-        match transformer::core::deserialize_payload(decoded) {
-            Ok(result) => result,
-            Err(e) => {
-                println!("ERROR DESERIALIZING JSON: {:#}", e);
-                return std::ptr::null();
-            }
-        };
 
     let address: String = format!("{}:{}", configuration.host, configuration.port);
 
