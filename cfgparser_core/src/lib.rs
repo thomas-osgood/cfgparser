@@ -8,6 +8,11 @@ mod transformer;
 ///
 /// this is the main logic function of this library.
 pub fn read(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+    // return an error if no key has been specified
+    if key.len() < 1 {
+        return Err("no encryption key specified".into());
+    }
+
     // read configuration bytes from current binary.
     let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
         Ok(result) => result,
