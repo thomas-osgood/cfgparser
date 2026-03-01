@@ -63,12 +63,12 @@ fn adjust_key(letter: u8, key: u8) -> u8 {
         _ => true,
     };
 
-    if letter_upper && key_upper {
-        key
-    } else if letter_upper && !key_upper {
+    if letter_upper && !key_upper {
         key - correction
-    } else {
+    } else if !letter_upper && key_upper {
         key + correction
+    } else {
+        key
     }
 }
 
