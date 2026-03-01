@@ -161,7 +161,7 @@ fn rotate(letter: u8, key: u8, rev: bool) -> u8 {
     // use the inverse of the key if "rev" flag is specified.
     // this is used when rotating for decryption.
     if rev {
-        corrected_key = (26 - corrected_key) % 26;
+        corrected_key = (ALPHABET_LEN - corrected_key) % ALPHABET_LEN;
     }
 
     match letter {
