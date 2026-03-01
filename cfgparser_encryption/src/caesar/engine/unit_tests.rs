@@ -34,6 +34,16 @@ fn test_isletter() {
 }
 
 #[test]
+fn test_adjustkey() {
+    assert_eq!(adjust_key(b'a', b'c'), b'c');
+    assert_eq!(adjust_key(b'A', b'c'), b'C');
+    assert_eq!(adjust_key(b'a', b'C'), b'c');
+    assert_eq!(adjust_key(b' ', b'c'), b'c');
+    assert_eq!(adjust_key(b'-', b'c'), b'c');
+    assert_eq!(adjust_key(b'A', b'C'), b'C');
+}
+
+#[test]
 /// test designed to make sure the is_valid_key function works
 /// as expected and is able to determine if a given key contains
 /// one or more chars that are not in the alphabet and is not
