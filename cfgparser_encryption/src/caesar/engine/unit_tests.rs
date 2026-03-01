@@ -34,6 +34,26 @@ fn test_isletter() {
 }
 
 #[test]
+/// test function designed to check if a given character
+/// is lowercase.
+fn test_islower() {
+    assert_eq!(is_lower(b'c'), true);
+    assert_eq!(is_lower(b'C'), false);
+    assert_eq!(is_lower(b'_'), false);
+    assert_eq!(is_lower(b' '), false);
+}
+
+#[test]
+/// test function designed to check if a given character
+/// is uppercase.
+fn test_isupper() {
+    assert_eq!(is_upper(b'C'), true);
+    assert_eq!(is_upper(b'c'), false);
+    assert_eq!(is_upper(b'_'), false);
+    assert_eq!(is_upper(b' '), false);
+}
+
+#[test]
 fn test_adjustkey() {
     assert_eq!(adjust_key(b'a', b'c'), b'c');
     assert_eq!(adjust_key(b'A', b'c'), b'C');
