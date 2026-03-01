@@ -7,6 +7,8 @@ const LOWER_Z: u8 = b'z' + 1;
 const UPPER_A: u8 = b'A';
 const UPPER_Z: u8 = b'Z' + 1;
 
+const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
+
 /// function designed to take in a key and determine whether it
 /// is a valid caesar/viginere cipher key.
 pub fn is_valid_key(key: Vec<u8>) -> bool {
@@ -91,12 +93,10 @@ fn adjust_key(letter: u8, key: u8) -> u8 {
         return key;
     }
 
-    let correction: u8 = LOWER_A - UPPER_A;
-
     if is_upper(letter) && is_lower(key) {
-        key - correction
+        key - LOWER_TO_UPPER_DIFF
     } else if is_lower(letter) && is_upper(key) {
-        key + correction
+        key + LOWER_TO_UPPER_DIFF
     } else {
         key
     }
