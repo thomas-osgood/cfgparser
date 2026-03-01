@@ -60,22 +60,15 @@ pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
 /// a, c => a, c (no adjustment)
 /// ```
 fn adjust_key(letter: u8, key: u8) -> u8 {
+    if !is_letter(letter) {
+        return key;
+    }
+
     let correction: u8 = LOWER_A - UPPER_A;
 
-    let letter_upper: bool = match letter {
-        LOWER_A..LOWER_Z => false,
-        UPPER_A..UPPER_Z => true,
-        _ => return key,
-    };
-
-    let key_upper: bool = match key {
-        LOWER_A..LOWER_Z => false,
-        _ => true,
-    };
-
-    if letter_upper && !key_upper {
+    if is_upper(letter) && is_lower(key) {
         key - correction
-    } else if !letter_upper && key_upper {
+    } else if is_lower(letter) && is_upper(key) {
         key + correction
     } else {
         key
@@ -98,6 +91,22 @@ fn correct_char(chr: u8) -> u8 {
 fn is_letter(letter: u8) -> bool {
     match letter {
         LOWER_A..LOWER_Z => true,
+        UPPER_A..UPPER_Z => true,
+        _ => false,
+    }
+}
+
+/// helper function designed to determine if a letter is lowercase.
+fn is_lower(c: u8) -> bool {
+    match c {
+        LOWER_A..LOWER_Z => true,
+        _ => false,
+    }
+}
+
+/// helper function designed to determine if a letter is uppercase.
+fn is_upper(c: u8) -> bool {
+    match c {
         UPPER_A..UPPER_Z => true,
         _ => false,
     }
