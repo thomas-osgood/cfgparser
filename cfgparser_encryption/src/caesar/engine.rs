@@ -49,6 +49,16 @@ pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
 
 /// function designed to adjust a key's case based on the
 /// case of the letter.
+///
+/// this will bring the key to the letter's case.
+///
+/// examples (l,k):
+///
+/// ```plaintext
+/// a, C => a, c (c + adjustment)
+/// A, c => A, C (c - adjustment)
+/// a, c => a, c (no adjustment)
+/// ```
 fn adjust_key(letter: u8, key: u8) -> u8 {
     let correction: u8 = LOWER_A - UPPER_A;
 
