@@ -16,12 +16,13 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
         return false;
     }
 
-    for letter in key {
-        if !is_letter(letter) {
-            return false;
-        }
-    }
-    true
+    // check for the existence of any element not being a letter.
+    //
+    // this uses "!" (not) becuase if there are no non-letters in
+    // the key, the key is valid.
+    //
+    // if the condition is true, the key is not valid.
+    !key.into_iter().any(|letter| !is_letter(letter))
 }
 
 /// function designed to implement a viginere cipher.
