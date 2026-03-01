@@ -1,8 +1,33 @@
 use super::*;
 
 #[test]
+/// test designed to make sure the decrypt function works as expected.
+///
+/// the decrypt function uses multiple helper functions to carry out
+/// its logic. this serves as a test of the logic and as a test to confirm
+/// all functions call the others correctly.
+fn test_decrypt() {
+    let key: Vec<u8> = "there".into();
+    let ciphertext: Vec<u8> = "alpcs xciicuvhp".into();
+    let ciphertext2: Vec<u8> = "Alpcs xciicuvhp".into();
+
+    let expected: Vec<u8> = "hello everybody".into();
+    let expected2: Vec<u8> = "Hello everybody".into();
+
+    let result: Vec<u8> = decrypt(ciphertext, key.clone());
+    let result2: Vec<u8> = decrypt(ciphertext2, key);
+
+    assert_eq!(result, expected);
+    assert_eq!(result2, expected2);
+}
+
+#[test]
 /// test designed to make sure the encrypt function (which uses the
 /// rotate and is_letter functions) logic works as expected.
+///
+/// the encrypt function uses multiple helper functions to carry out
+/// its logic. this serves as a test of the logic and as a test to confirm
+/// all functions call the others correctly.
 fn test_encrypt() {
     let key: Vec<u8> = "there".into();
     let plaintext: Vec<u8> = "hello everybody".into();
@@ -78,10 +103,10 @@ fn test_isvalidkey() {
 #[test]
 /// test designed to make sure the rotate function works as expected.
 fn test_rotate() {
-    assert_eq!(rotate(b'a', b'a'), b'a');
-    assert_eq!(rotate(b'm', b'c'), b'o');
-    assert_eq!(rotate(b'm', b'y'), b'k');
-    assert_eq!(rotate(b'-', b'x'), b'-');
-    assert_eq!(rotate(b'/', b'd'), b'/');
-    assert_eq!(rotate(b'5', b'd'), b'5');
+    assert_eq!(rotate(b'a', b'a', false), b'a');
+    assert_eq!(rotate(b'm', b'c', false), b'o');
+    assert_eq!(rotate(b'm', b'y', false), b'k');
+    assert_eq!(rotate(b'-', b'x', false), b'-');
+    assert_eq!(rotate(b'/', b'd', false), b'/');
+    assert_eq!(rotate(b'5', b'd', false), b'5');
 }
