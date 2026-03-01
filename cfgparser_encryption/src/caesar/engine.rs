@@ -26,16 +26,43 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
 ///
 /// this will take in plaintext and a key and rotate each letter
 /// in the plaintext using the associated key character.
+pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+    let mut plaintext: Vec<u8> = vec![];
+    let mut key_pos: usize = 0;
+    let len_key = key.len();
+    let rev: bool = true;
+
+    if !is_valid_key(key.clone()) {}
+
+    for (_, current) in ciphertext.iter().enumerate() {
+        // perform rotation and add result to ciphertext.
+        plaintext.push(rotate(*current, key[key_pos % len_key], rev));
+
+        // only advance the key position if it has been used. this
+        // only happens when the current character is a letter.
+        if is_letter(*current) {
+            key_pos += 1;
+        }
+    }
+
+    return plaintext;
+}
+
+/// function designed to implement a viginere cipher.
+///
+/// this will take in plaintext and a key and rotate each letter
+/// in the plaintext using the associated key character.
 pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
     let mut ciphertext: Vec<u8> = vec![];
     let mut key_pos: usize = 0;
     let len_key = key.len();
+    let rev: bool = false;
 
     if !is_valid_key(key.clone()) {}
 
     for (_, current) in plaintext.iter().enumerate() {
         // perform rotation and add result to ciphertext.
-        ciphertext.push(rotate(*current, key[key_pos % len_key]));
+        ciphertext.push(rotate(*current, key[key_pos % len_key], rev));
 
         // only advance the key position if it has been used. this
         // only happens when the current character is a letter.
@@ -124,12 +151,18 @@ fn is_upper(c: u8) -> bool {
 ///
 /// if the letter is not part of the alphabet, nothing will happen to it
 /// and it will be returned as normal.
-fn rotate(letter: u8, key: u8) -> u8 {
-    let corrected_key: u8;
+fn rotate(letter: u8, key: u8, rev: bool) -> u8 {
+    let mut corrected_key: u8;
     let corrected_letter: u8 = correct_char(letter);
     let rotated: u8;
 
     corrected_key = adjust_key(corrected_letter, correct_char(key));
+
+    // use the inverse of the key if "rev" flag is specified.
+    // this is used when rotating for decryption.
+    if rev {
+        corrected_key = (26 - corrected_key) % 26;
+    }
 
     match letter {
         LOWER_A..LOWER_Z => rotated = ((corrected_letter + corrected_key) % ALPHABET_LEN) + LOWER_A,
