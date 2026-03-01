@@ -4,13 +4,18 @@ use super::*;
 /// test designed to make sure the encrypt function (which uses the
 /// rotate and is_letter functions) logic works as expected.
 fn test_encrypt() {
-    let key: Vec<u8> = "there".to_string().into_bytes();
-    let plaintext: Vec<u8> = "hello everybody".to_string().into_bytes();
+    let key: Vec<u8> = "there".into();
+    let plaintext: Vec<u8> = "hello everybody".into();
+    let plaintext2: Vec<u8> = "Hello everybody".into();
 
-    let expected: Vec<u8> = "alpcs xciicuvhp".to_string().into_bytes();
-    let result: Vec<u8> = encrypt(plaintext, key);
+    let expected: Vec<u8> = "alpcs xciicuvhp".into();
+    let expected2: Vec<u8> = "Alpcs xciicuvhp".into();
+
+    let result: Vec<u8> = encrypt(plaintext, key.clone());
+    let result2: Vec<u8> = encrypt(plaintext2, key);
 
     assert_eq!(result, expected);
+    assert_eq!(result2, expected2);
 }
 
 #[test]
