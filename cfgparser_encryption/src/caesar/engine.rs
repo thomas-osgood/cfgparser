@@ -47,6 +47,42 @@ pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
     return ciphertext;
 }
 
+/// function designed to adjust a key's case based on the
+/// case of the letter.
+fn adjust_key(letter: u8, key: u8) -> u8 {
+    let correction: u8 = LOWER_A - UPPER_A;
+
+    let letter_upper: bool = match letter {
+        LOWER_A..LOWER_Z => false,
+        UPPER_A..UPPER_Z => true,
+        _ => return key,
+    };
+
+    let key_upper: bool = match key {
+        LOWER_A..LOWER_Z => false,
+        _ => true,
+    };
+
+    if letter_upper && key_upper {
+        key
+    } else if letter_upper && !key_upper {
+        key - correction
+    } else {
+        key + correction
+    }
+}
+
+/// function designed to take in a character and correct its value
+/// if it is a letter so it can be within the range 0..25. if the
+/// character is not a letter, nothing is done to it.
+fn correct_char(chr: u8) -> u8 {
+    match chr {
+        LOWER_A..LOWER_Z => chr - LOWER_A,
+        UPPER_A..UPPER_Z => chr - UPPER_A,
+        _ => chr,
+    }
+}
+
 /// simple helper function designed to determine if a given character
 /// is in the alphabet.
 fn is_letter(letter: u8) -> bool {
@@ -71,20 +107,14 @@ fn is_letter(letter: u8) -> bool {
 /// and it will be returned as normal.
 fn rotate(letter: u8, key: u8) -> u8 {
     let corrected_key: u8;
-    let corrected_letter: u8;
+    let corrected_letter: u8 = correct_char(letter);
     let rotated: u8;
 
+    corrected_key = adjust_key(corrected_letter, correct_char(key));
+
     match letter {
-        LOWER_A..LOWER_Z => {
-            corrected_letter = letter - LOWER_A;
-            corrected_key = key - LOWER_A;
-            rotated = ((corrected_letter + corrected_key) % ALPHABET_LEN) + LOWER_A
-        }
-        UPPER_A..UPPER_Z => {
-            corrected_letter = letter - UPPER_A;
-            corrected_key = key - UPPER_A;
-            rotated = ((corrected_letter + corrected_key) % ALPHABET_LEN) + UPPER_A
-        }
+        LOWER_A..LOWER_Z => rotated = ((corrected_letter + corrected_key) % ALPHABET_LEN) + LOWER_A,
+        UPPER_A..UPPER_Z => rotated = ((corrected_letter + corrected_key) % ALPHABET_LEN) + UPPER_A,
         _ => rotated = letter,
     };
 
