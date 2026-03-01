@@ -7,6 +7,10 @@ const LOWER_Z: u8 = b'z' + 1;
 const UPPER_A: u8 = b'A';
 const UPPER_Z: u8 = b'Z' + 1;
 
+/// constant holding difference between ascii "a" and ascii "A".
+///
+/// this can be used to change the case of a letter from upper to
+/// lower or visa versa.
 const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 
 /// function designed to take in a key and determine whether it
