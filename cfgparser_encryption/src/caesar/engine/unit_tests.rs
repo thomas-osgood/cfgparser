@@ -98,6 +98,7 @@ fn test_isvalidkey() {
     assert_eq!(is_valid_key("TESTKEY".into()), true);
     assert_eq!(is_valid_key("i am a key".into()), false);
     assert_eq!(is_valid_key("123489".into()), false);
+    assert_eq!(is_valid_key(vec![]), false);
 }
 
 #[test]
