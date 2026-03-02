@@ -2,6 +2,8 @@ use std::io::{Read, Seek};
 
 /// generic trait defining a CfgExtractor. this is defined
 /// so mocking can be done during testing.
+///
+/// the main implementation of this is in SelfExtractor.
 pub trait CfgExtractor {
     fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>>;
 }
