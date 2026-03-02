@@ -32,6 +32,11 @@ mod transformer;
 /// current binary.
 ///
 /// this is the main logic function of this library.
+///
+/// for most use-cases the `extractor::core::SelfExtractor` struct
+/// is what should be passed in as the `reader`. this struct implements
+/// logic that will read the configuration bytes from the end of
+/// the current binary.
 pub fn read(
     reader: impl extractor::core::CfgExtractor,
     key: &[u8],
