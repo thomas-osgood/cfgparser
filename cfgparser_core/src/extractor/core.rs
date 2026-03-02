@@ -1,5 +1,10 @@
 use std::io::{Read, Seek};
 
+/// constant size of the byte buffer that will be used
+/// to hold the bytes representing the size of the
+/// configuration array.
+const SZ_SIZEBUFF: usize = 8;
+
 /// generic trait defining a CfgExtractor. this is defined
 /// so mocking can be done during testing.
 ///
@@ -17,11 +22,12 @@ impl CfgExtractor for SelfExtractor {
     fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
         let current_binary: std::path::PathBuf = std::env::current_exe()?;
         let mut fptr: std::fs::File = std::fs::File::open(current_binary)?;
+        let size_start: i64 = SZ_SIZEBUFF as i64 * -1;
 
         // allocate buffer that will hold the size bytes.
-        let mut buf_sz: [u8; 8] = [0; 8];
+        let mut buf_sz: [u8; SZ_SIZEBUFF as usize] = [0; 8];
         // jumpt to the start of the size bytes (end - 8 bytes).
-        let _: u64 = fptr.seek(std::io::SeekFrom::End(-8))?;
+        let _: u64 = fptr.seek(std::io::SeekFrom::End(size_start))?;
 
         fptr.read_exact(&mut buf_sz)?;
 
