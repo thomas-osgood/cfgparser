@@ -14,7 +14,7 @@ pub fn encrypt_decrypt(key: Vec<u8>, data: Vec<u8>) -> Vec<u8> {
     // loop over the data and XOR each item with the corresponding
     // key item.
     //
-    // this is the encrypt/decrypt loop.
+    // this is the encrypt/decrypt step.
     let result: Vec<u8> = data
         .iter()
         .enumerate()
