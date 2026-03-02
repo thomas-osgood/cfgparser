@@ -34,23 +34,29 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
 /// this will take in plaintext and a key and rotate each letter
 /// in the plaintext using the associated key character.
 pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
-    let mut plaintext: Vec<u8> = vec![];
+    // let mut plaintext: Vec<u8> = vec![];
     let mut key_pos: usize = 0;
     let len_key = key.len();
     let rev: bool = true;
 
     if !is_valid_key(key.clone()) {}
 
-    for (_, current) in ciphertext.iter().enumerate() {
-        // perform rotation and add result to ciphertext.
-        plaintext.push(rotate(*current, key[key_pos % len_key], rev));
+    // go through each letter in the ciphertext and rotate it
+    // by the inverse key value to convert it back to the
+    // original plaintext value and generate the final plaintext vector.
+    let plaintext: Vec<u8> = ciphertext
+        .iter()
+        .enumerate()
+        .map(|(_, &current)| {
+            let new: u8 = rotate(current, key[key_pos % len_key], rev);
 
-        // only advance the key position if it has been used. this
-        // only happens when the current character is a letter.
-        if is_letter(*current) {
-            key_pos += 1;
-        }
-    }
+            if is_letter(current) {
+                key_pos += 1;
+            }
+
+            return new;
+        })
+        .collect();
 
     return plaintext;
 }
@@ -60,23 +66,28 @@ pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
 /// this will take in plaintext and a key and rotate each letter
 /// in the plaintext using the associated key character.
 pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
-    let mut ciphertext: Vec<u8> = vec![];
     let mut key_pos: usize = 0;
     let len_key = key.len();
     let rev: bool = false;
 
     if !is_valid_key(key.clone()) {}
 
-    for (_, current) in plaintext.iter().enumerate() {
-        // perform rotation and add result to ciphertext.
-        ciphertext.push(rotate(*current, key[key_pos % len_key], rev));
+    // go through each letter in the plaintext and rotate it
+    // by the corresponding key value to generate the final
+    // ciphertext vector.
+    let ciphertext: Vec<u8> = plaintext
+        .iter()
+        .enumerate()
+        .map(|(_, &current)| {
+            let new = rotate(current, key[key_pos % len_key], rev);
 
-        // only advance the key position if it has been used. this
-        // only happens when the current character is a letter.
-        if is_letter(*current) {
-            key_pos += 1;
-        }
-    }
+            if is_letter(current) {
+                key_pos += 1;
+            }
+
+            return new;
+        })
+        .collect();
 
     return ciphertext;
 }
