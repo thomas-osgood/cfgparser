@@ -23,6 +23,8 @@
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 
+use crate::extractor::core::CfgExtractor;
+
 mod extractor;
 mod models;
 mod transformer;
@@ -39,7 +41,7 @@ pub fn read(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::erro
     }
 
     // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = match extractor::core::extract_cfg_bytes() {
+    let cfg_bytes: Vec<u8> = match extractor::core::SelfExtractor::extract_cfg_bytes() {
         Ok(result) => result,
         Err(e) => return Err(e.into()),
     };
