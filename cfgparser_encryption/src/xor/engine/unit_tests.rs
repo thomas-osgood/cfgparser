@@ -22,6 +22,10 @@ fn test_encrypt_decrypt() {
     ];
     let result: Vec<u8> = encrypt_decrypt(test_key2, test_message2);
 
+    let test_message3: Vec<u8> = vec![];
+    let result_empty: Vec<u8> = encrypt_decrypt(test_key, test_message3);
+
     assert_eq!(result_full_cycle, test_message);
     assert_eq!(result, expected);
+    assert_eq!(result_empty, vec![]);
 }
