@@ -23,7 +23,7 @@
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 
-mod extractor;
+pub mod extractor;
 mod models;
 mod transformer;
 
