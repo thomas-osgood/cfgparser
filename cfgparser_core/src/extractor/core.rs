@@ -3,7 +3,7 @@ use std::io::{Read, Seek};
 /// generic trait defining a CfgExtractor. this is defined
 /// so mocking can be done during testing.
 pub trait CfgExtractor {
-    fn extract_cfg_bytes() -> std::io::Result<Vec<u8>>;
+    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>>;
 }
 
 /// struct designed to extract configuration bytes from the
@@ -12,7 +12,7 @@ pub struct SelfExtractor;
 impl CfgExtractor for SelfExtractor {
     /// function designed to extract the configuration
     /// bytes from the current binary.
-    fn extract_cfg_bytes() -> std::io::Result<Vec<u8>> {
+    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
         let current_binary: std::path::PathBuf = std::env::current_exe()?;
         let mut fptr: std::fs::File = std::fs::File::open(current_binary)?;
 

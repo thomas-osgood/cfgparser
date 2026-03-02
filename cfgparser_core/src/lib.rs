@@ -23,8 +23,6 @@
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 
-use crate::extractor::core::CfgExtractor;
-
 mod extractor;
 mod models;
 mod transformer;
@@ -34,14 +32,17 @@ mod transformer;
 /// current binary.
 ///
 /// this is the main logic function of this library.
-pub fn read(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+pub fn read(
+    reader: impl extractor::core::CfgExtractor,
+    key: &[u8],
+) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
     // return an error if no key has been specified
     if key.len() < 1 {
         return Err("no encryption key specified".into());
     }
 
     // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = match extractor::core::SelfExtractor::extract_cfg_bytes() {
+    let cfg_bytes: Vec<u8> = match reader.extract_cfg_bytes() {
         Ok(result) => result,
         Err(e) => return Err(e.into()),
     };
@@ -88,7 +89,8 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     }
 
     // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read(key) {
+    let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
+    {
         Ok(result) => result,
         Err(e) => {
             println!("ERROR READING CONFIG: {:#}", e);
