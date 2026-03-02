@@ -25,7 +25,7 @@ impl CfgExtractor for SelfExtractor {
         let size_start: i64 = SZ_SIZEBUFF as i64 * -1;
 
         // allocate buffer that will hold the size bytes.
-        let mut buf_sz: [u8; SZ_SIZEBUFF as usize] = [0; 8];
+        let mut buf_sz: [u8; SZ_SIZEBUFF as usize] = [0; SZ_SIZEBUFF];
         // jumpt to the start of the size bytes (end - 8 bytes).
         let _: u64 = fptr.seek(std::io::SeekFrom::End(size_start))?;
 
