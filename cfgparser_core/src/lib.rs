@@ -24,7 +24,7 @@
 //! is done with it. this is similar to the free() function in C.
 
 pub mod extractor;
-mod models;
+pub mod models;
 mod transformer;
 
 /// function designed to run through the process of extracting,
