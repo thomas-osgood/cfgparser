@@ -1,4 +1,4 @@
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub host: String,
     pub port: i64,
