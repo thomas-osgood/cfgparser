@@ -47,25 +47,17 @@ pub fn read(
     }
 
     // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = match reader.extract_cfg_bytes() {
-        Ok(result) => result,
-        Err(e) => return Err(e.into()),
-    };
+    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
 
     // XOR decrypt and base64 decode the bytes extracted in the previous
     // step to get a string representation of the JSON structure holding
     // the configuration information.
-    let decoded: String = match transformer::core::transform_payload(key, &cfg_bytes) {
-        Ok(result) => String::from_utf8_lossy(&result).to_string(),
-        Err(e) => return Err(e.into()),
-    };
+    let decoded_vec: Vec<u8> = transformer::core::transform_payload(key, &cfg_bytes)?;
+    let decoded: String = String::from_utf8_lossy(&decoded_vec).to_string();
 
     // JSON deserialize the string acquired from the process above into
     // a Configuration struct.
-    match transformer::core::deserialize_payload(decoded) {
-        Ok(result) => Ok(result),
-        Err(e) => return Err(e.into()),
-    }
+    Ok(transformer::core::deserialize_payload(decoded)?)
 }
 
 #[no_mangle]
