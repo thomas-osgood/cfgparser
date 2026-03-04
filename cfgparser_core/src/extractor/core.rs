@@ -50,3 +50,26 @@ impl CfgExtractor for SelfExtractor {
         Ok(payload_buf)
     }
 }
+
+#[cfg(test)]
+/// extractor struct meant to be used in unit tests only.
+pub struct TestExtractor;
+
+#[cfg(test)]
+/// implementation of the CfgExtractor for the TestExtractor.
+impl CfgExtractor for TestExtractor {
+    /// dummy extract_cfg_bytes function that will be used by
+    /// the TestExtractor. this function is designed for testing
+    /// only and is meant to simulate a configuration that has
+    /// been json-encoded, base64-encoded and xor-encrypted.
+    ///
+    /// config: {"host": "secrethost", "port": 8000}
+    /// key: "secret"
+    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+        Ok(vec![
+            22, 28, 41, 29, 7, 71, 61, 85, 42, 24, 10, 19, 58, 11, 45, 30, 60, 71, 57, 9, 7, 53,
+            13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
+            46, 54, 39, 77,
+        ])
+    }
+}
