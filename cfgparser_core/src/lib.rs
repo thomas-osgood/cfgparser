@@ -27,6 +27,9 @@ pub mod extractor;
 pub mod models;
 mod transformer;
 
+#[cfg(test)]
+mod unit_tests;
+
 /// function designed to run through the process of extracting,
 /// transforming and deserializing configuration data from the
 /// current binary.
