@@ -58,6 +58,26 @@ impl CfgExtractor for SelfExtractor {
     }
 }
 
+#[derive(Debug, Default)]
+/// struct designed to extract configuration bytes from a
+/// given file.
+pub struct FileExtractor {
+    pub filename: String,
+}
+
+impl FileExtractor {
+    pub fn new(filename: String) -> FileExtractor {
+        FileExtractor { filename }
+    }
+}
+
+impl CfgExtractor for FileExtractor {
+    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+        let fptr: std::fs::File = std::fs::File::open(&self.filename)?;
+        read_bytes(fptr)
+    }
+}
+
 #[cfg(test)]
 /// extractor struct meant to be used in unit tests only.
 pub struct TestExtractor;
