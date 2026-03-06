@@ -40,10 +40,13 @@ mod unit_tests;
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
-pub fn read(
-    reader: impl extractor::core::CfgExtractor,
+pub fn read<T>(
+    reader: T,
     key: &[u8],
-) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+) -> Result<models::core::Configuration, Box<dyn std::error::Error>>
+where
+    T: extractor::core::CfgExtractor,
+{
     // return an error if no key has been specified
     if key.len() < 1 {
         return Err("no encryption key specified".into());
