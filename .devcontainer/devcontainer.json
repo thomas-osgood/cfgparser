@@ -6,7 +6,7 @@
   "image": "mcr.microsoft.com/devcontainers/rust:2-1-trixie",
   "features": {
     "ghcr.io/martinaskestad/features/mingw:1": {}
-  }
+  },
 
   // Use 'mounts' to make the cargo cache persistent in a Docker Volume.
   // "mounts": [
@@ -24,7 +24,7 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "rustc --version",
+  "postCreateCommand": "sh ./.devcontainer/postCreate.sh"
 
   // Configure tool-specific properties.
   // "customizations": {},
