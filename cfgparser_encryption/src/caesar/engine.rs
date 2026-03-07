@@ -33,13 +33,15 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
 ///
 /// this will take in plaintext and a key and rotate each letter
 /// in the plaintext using the associated key character.
-pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     // let mut plaintext: Vec<u8> = vec![];
     let mut key_pos: usize = 0;
     let len_key = key.len();
     let rev: bool = true;
 
-    if !is_valid_key(key.clone()) {}
+    if !is_valid_key(key.clone()) {
+        return Err("invalid key passed in".into());
+    }
 
     // go through each letter in the ciphertext and rotate it
     // by the inverse key value to convert it back to the
@@ -58,19 +60,21 @@ pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
         })
         .collect();
 
-    return plaintext;
+    return Ok(plaintext);
 }
 
 /// function designed to implement a viginere cipher.
 ///
 /// this will take in plaintext and a key and rotate each letter
 /// in the plaintext using the associated key character.
-pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut key_pos: usize = 0;
     let len_key = key.len();
     let rev: bool = false;
 
-    if !is_valid_key(key.clone()) {}
+    if !is_valid_key(key.clone()) {
+        return Err("invalid key passed in".into());
+    }
 
     // go through each letter in the plaintext and rotate it
     // by the corresponding key value to generate the final
@@ -89,7 +93,7 @@ pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
         })
         .collect();
 
-    return ciphertext;
+    return Ok(ciphertext);
 }
 
 /// function designed to adjust a key's case based on the
