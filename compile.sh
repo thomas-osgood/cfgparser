@@ -3,10 +3,14 @@
 # helper script designed to compile each target architecture
 # this library is designed for.
 
-targets=("x86_64-unknown-linux-gnu" "x86_64-pc-windows-gnu")
+# auto-detect installed architectures
+readarray -t targets <<< $(rustup target list | grep "(installed)")
 
-for target in ${targets[@]}
+for idx in ${!targets[@]}
 do
+    # remove " (installed)" from target
+    target=$(echo "${targets[$idx]}" | sed 's/ (installed)//')
+
     cargo build --release --target=$target 2>/dev/null
     lastexitcode=$?
     if [ $lastexitcode -eq 0 ]; then
