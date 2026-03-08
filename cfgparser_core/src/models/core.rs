@@ -1,6 +1,7 @@
 #[derive(serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub host: String,
+    #[serde(default = "default_port")]
     pub port: i64,
 }
 
@@ -11,4 +12,9 @@ impl Configuration {
             port: port,
         }
     }
+}
+
+/// default port for JSON deserialize if the field is not present.
+fn default_port() -> i64 {
+    80
 }
