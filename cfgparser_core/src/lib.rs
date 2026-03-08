@@ -27,6 +27,12 @@ pub mod extractor;
 pub mod models;
 mod transformer;
 
+#[cfg(target_os = "windows")]
+use windows::Win32::{
+    Foundation::HINSTANCE,
+    System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH},
+};
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -128,4 +134,20 @@ pub extern "C" fn free_memory(ptr: *mut std::ffi::c_char) {
     }
 
     let _ = unsafe { std::ffi::CString::from_raw(ptr) };
+}
+
+#[cfg(target_os = "windows")]
+#[no_mangle]
+#[allow(non_snake_case, unused_variables)]
+/// references:
+///
+/// https://samrambles.com/guides/window-hacking-with-rust/creating-a-dll-with-rust/index.html#dllmain
+pub extern "system" fn DllMain(dll_module: HINSTANCE, call_reason: u32, _: *mut ()) -> bool {
+    match call_reason {
+        DLL_PROCESS_ATTACH => (),
+        DLL_PROCESS_DETACH => (),
+        _ => (),
+    }
+
+    true
 }
