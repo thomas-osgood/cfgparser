@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod unit_tests;
+
 #[derive(serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub host: String,
