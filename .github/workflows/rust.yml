@@ -31,12 +31,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-pc-windows-gnu
       - name: Build Windows
-        run: cargo build --release --verbose
+        run: cargo build --release --target="x86_64-pc-windows-gnu" --verbose
       - name: Run Tests
-        run: cargo test --verbose
+        run: cargo test --target="x86_64-pc-windows-gnu" --verbose
       - name: Upload DLL
         uses: actions/upload-artifact@v4
         with:
           name: cfgparser-dll-${{ github.ref_name }}
-          path: target/release/cfgparser_core.dll
+          path: target/x86_64-pc-windows-gnu/release/cfgparser_core.dll
