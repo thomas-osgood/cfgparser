@@ -19,6 +19,11 @@ jobs:
       run: cargo build --release --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Upload Shared Object
+      uses: actions/upload-artifact@v4
+      with:
+        name: cfgparser-so-${{ github.ref_name }}
+        path: target/release/libcfgparser_core.so
 
   build_windows:
 
@@ -30,3 +35,8 @@ jobs:
         run: cargo build --release --verbose
       - name: Run Tests
         run: cargo test --verbose
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: cfgparser-dll-${{ github.ref_name }}
+          path: target/release/cfgparser_core.dll
