@@ -17,6 +17,15 @@ impl Configuration {
     }
 }
 
+impl Default for Configuration {
+    fn default() -> Self {
+        Configuration {
+            host: "localhost".to_string(),
+            port: 80,
+        }
+    }
+}
+
 /// default port for JSON deserialize if the field is not present.
 fn default_port() -> i64 {
     80
