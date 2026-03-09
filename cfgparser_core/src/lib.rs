@@ -101,10 +101,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
     {
         Ok(result) => result,
-        Err(e) => {
-            println!("ERROR READING CONFIG: {:#}", e);
-            return std::ptr::null();
-        }
+        Err(_) => return std::ptr::null(),
     };
 
     let address: String = format!("{}:{}", configuration.host, configuration.port);
@@ -113,10 +110,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     // into a char* and returned.
     let address_cstring: std::ffi::CString = match std::ffi::CString::new(address) {
         Ok(result) => result,
-        Err(e) => {
-            println!("Error converting to CString: {:#?}", e);
-            return std::ptr::null();
-        }
+        Err(_) => return std::ptr::null(),
     };
 
     address_cstring.into_raw()
