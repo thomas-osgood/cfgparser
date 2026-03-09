@@ -3,30 +3,28 @@ name: Rust
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+' # Triggers on tags like v1.0.0
+      - "v[0-9]+.[0-9]+.[0-9]+" # Triggers on tags like v1.0.0
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build_linux:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build Linux
-      run: cargo build --release --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Upload Shared Object
-      uses: actions/upload-artifact@v4
-      with:
-        name: cfgparser-so-${{ github.ref_name }}
-        path: target/release/libcfgparser_core.so
+      - uses: actions/checkout@v4
+      - name: Build Linux
+        run: cargo build --release
+      - name: Run tests
+        run: cargo test
+      - name: Upload Shared Object
+        uses: actions/upload-artifact@v4
+        with:
+          name: cfgparser-so-${{ github.ref_name }}
+          path: target/release/libcfgparser_core.so
 
   build_windows:
-
     runs-on: windows-latest
 
     steps:
@@ -37,9 +35,9 @@ jobs:
           toolchain: stable
           target: x86_64-pc-windows-gnu
       - name: Build Windows
-        run: cargo build --release --target="x86_64-pc-windows-gnu" --verbose
+        run: cargo build --release --target="x86_64-pc-windows-gnu"
       - name: Run Tests
-        run: cargo test --target="x86_64-pc-windows-gnu" --verbose
+        run: cargo test --target="x86_64-pc-windows-gnu"
       - name: Upload DLL
         uses: actions/upload-artifact@v4
         with:
