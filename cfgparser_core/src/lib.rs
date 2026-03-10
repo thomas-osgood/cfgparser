@@ -103,11 +103,9 @@ where
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
-    let key: &[u8];
-
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
-    key = convert_key_from_c(&raw_key);
+    let key: &[u8] = convert_key_from_c(&raw_key);
 
     // read the Configuration from the current binary.
     let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
@@ -139,7 +137,6 @@ pub extern "C" fn read_cfg_from_file(
     raw_key: *const std::ffi::c_char,
 ) -> *const std::ffi::c_char {
     let filename: &str;
-    let key: &[u8];
 
     if raw_filename.is_null() {
         return std::ptr::null();
@@ -158,13 +155,13 @@ pub extern "C" fn read_cfg_from_file(
         Err(_) => return std::ptr::null(),
     };
 
-    // if null is passed in as the key, use q as the default;
-    // otherwise use the char* key passed in.
-    key = convert_key_from_c(&raw_key);
-
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor {
         filename: filename.to_string(),
     };
+
+    // if null is passed in as the key, use q as the default;
+    // otherwise use the char* key passed in.
+    let key: &[u8] = convert_key_from_c(&raw_key);
 
     // read the Configuration from the target file.
     let configuration: models::core::Configuration = match read(reader, key) {
