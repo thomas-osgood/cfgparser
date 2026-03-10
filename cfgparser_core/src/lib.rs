@@ -117,6 +117,11 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 }
 
 #[no_mangle]
+/// function designed to take in a filename and key, extract configuration
+/// information from the target and return a "<host>:<port>" string.
+///
+/// this performs the same reading logic as "read_cfg" with the only difference
+/// being it is not reading from the current binary, but from a user-specified file.
 pub extern "C" fn read_cfg_from_file(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
