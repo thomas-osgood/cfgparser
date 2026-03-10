@@ -3,6 +3,16 @@
 # helper script designed to compile each target architecture
 # this library is designed for.
 
+# build main "target/release" object
+cargo build --release 2>/dev/null
+lastexitcode=$?
+
+if [ $lastexitcode -ne 0 ]; then
+    echo "[-] error compiling library. please check code for errors ..."
+    exit 1
+fi
+echo "[+] main release successfully compiled"
+
 # auto-detect installed architectures
 readarray -t targets <<< $(rustup target list | grep "(installed)")
 
