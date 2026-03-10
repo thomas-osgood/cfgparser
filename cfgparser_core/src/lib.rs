@@ -117,6 +117,69 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 }
 
 #[no_mangle]
+pub extern "C" fn read_cfg_from_file(
+    raw_filename: *const std::ffi::c_char,
+    raw_key: *const std::ffi::c_char,
+) -> *const std::ffi::c_char {
+    let filename: &str;
+    let key: &[u8];
+
+    if raw_filename.is_null() {
+        return std::ptr::null();
+    }
+
+    // convert the filename input to a CStr.
+    //
+    // this borrows the value from the memory that is owned
+    // by the caller.
+    let filename_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_filename) };
+
+    // convert the CStr holding the key to bytes so it can
+    // be used later on.
+    filename = match filename_cstr.to_str() {
+        Ok(result) => result,
+        Err(_) => return std::ptr::null(),
+    };
+
+    // if null is passed in as the key, use q as the default;
+    // otherwise use the char* key passed in.
+    if raw_key.is_null() {
+        key = "q".as_bytes();
+    } else {
+        // convert the input to a CStr.
+        //
+        // this borrows the value from the memory that is owned
+        // by the caller.
+        let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
+
+        // convert the CStr holding the key to bytes so it can
+        // be used later on.
+        key = key_cstr.to_bytes();
+    }
+
+    let reader: extractor::core::FileExtractor = extractor::core::FileExtractor {
+        filename: filename.to_string(),
+    };
+
+    // read the Configuration from the target file.
+    let configuration: models::core::Configuration = match read(reader, key) {
+        Ok(result) => result,
+        Err(_) => return std::ptr::null(),
+    };
+
+    let address: String = format!("{}:{}", configuration.host, configuration.port);
+
+    // convert the String (rust) into a CString so it can be converted
+    // into a char* and returned.
+    let address_cstring: std::ffi::CString = match std::ffi::CString::new(address) {
+        Ok(result) => result,
+        Err(_) => return std::ptr::null(),
+    };
+
+    address_cstring.into_raw()
+}
+
+#[no_mangle]
 /// function designed to safely free a char* pointer that
 /// has been allocated by rust.
 ///
