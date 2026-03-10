@@ -36,6 +36,30 @@ use windows::Win32::{
 #[cfg(test)]
 mod unit_tests;
 
+/// helper function deisgned to take a key passed in as a C string
+/// and convert it to a byte array.
+fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> &[u8] {
+    let key: &[u8];
+
+    // if null is passed in as the key, use q as the default;
+    // otherwise use the char* key passed in.
+    if raw_key.is_null() {
+        key = "q".as_bytes();
+    } else {
+        // convert the input to a CStr.
+        //
+        // this borrows the value from the memory that is owned
+        // by the caller.
+        let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(*raw_key) };
+
+        // convert the CStr holding the key to bytes so it can
+        // be used later on.
+        key = key_cstr.to_bytes();
+    }
+
+    key
+}
+
 /// function designed to run through the process of extracting,
 /// transforming and deserializing configuration data from the
 /// current binary.
@@ -83,19 +107,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
-    if raw_key.is_null() {
-        key = "q".as_bytes();
-    } else {
-        // convert the input to a CStr.
-        //
-        // this borrows the value from the memory that is owned
-        // by the caller.
-        let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
-
-        // convert the CStr holding the key to bytes so it can
-        // be used later on.
-        key = key_cstr.to_bytes();
-    }
+    key = convert_key_from_c(&raw_key);
 
     // read the Configuration from the current binary.
     let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
@@ -148,19 +160,7 @@ pub extern "C" fn read_cfg_from_file(
 
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
-    if raw_key.is_null() {
-        key = "q".as_bytes();
-    } else {
-        // convert the input to a CStr.
-        //
-        // this borrows the value from the memory that is owned
-        // by the caller.
-        let key_cstr: &std::ffi::CStr = unsafe { std::ffi::CStr::from_ptr(raw_key) };
-
-        // convert the CStr holding the key to bytes so it can
-        // be used later on.
-        key = key_cstr.to_bytes();
-    }
+    key = convert_key_from_c(&raw_key);
 
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor {
         filename: filename.to_string(),
