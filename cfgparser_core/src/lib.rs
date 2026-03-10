@@ -129,16 +129,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
         Err(_) => return std::ptr::null(),
     };
 
-    let address: String = format!("{}:{}", configuration.host, configuration.port);
-
-    // convert the String (rust) into a CString so it can be converted
-    // into a char* and returned.
-    let address_cstring: std::ffi::CString = match std::ffi::CString::new(address) {
-        Ok(result) => result,
-        Err(_) => return std::ptr::null(),
-    };
-
-    address_cstring.into_raw()
+    format_address_c(configuration)
 }
 
 #[no_mangle]
@@ -184,16 +175,7 @@ pub extern "C" fn read_cfg_from_file(
         Err(_) => return std::ptr::null(),
     };
 
-    let address: String = format!("{}:{}", configuration.host, configuration.port);
-
-    // convert the String (rust) into a CString so it can be converted
-    // into a char* and returned.
-    let address_cstring: std::ffi::CString = match std::ffi::CString::new(address) {
-        Ok(result) => result,
-        Err(_) => return std::ptr::null(),
-    };
-
-    address_cstring.into_raw()
+    format_address_c(configuration)
 }
 
 #[no_mangle]
