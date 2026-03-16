@@ -71,7 +71,12 @@ fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> &[u8] {
 /// helper function designed to format the C2 address held in the configuration
 /// struct and return it as a *char that can be used by C.
 fn format_address_c(configuration: models::core::Configuration) -> *const std::ffi::c_char {
-    let address: String = format!("{}:{}", configuration.host, configuration.port);
+    let address: String = format!(
+        "{}://{}:{}",
+        configuration.scheme.to_string(),
+        configuration.host,
+        configuration.port
+    );
 
     // convert the String (rust) into a CString so it can be converted
     // into a char* and returned.
