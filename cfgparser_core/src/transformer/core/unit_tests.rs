@@ -5,9 +5,13 @@ use super::*;
 /// functionality of deserialize_payload. this function is
 /// designed to deserialize a string into a Configuration struct.
 fn test_deserialize_payload() {
-    let expected: crate::models::core::Configuration =
-        crate::models::core::Configuration::new("localhost".to_string(), 443);
-    let serialized: String = "{\"host\": \"localhost\", \"port\": 443}".to_string();
+    let expected: crate::models::core::Configuration = crate::models::core::Configuration::new(
+        "localhost".to_string(),
+        443,
+        crate::models::core::SchemeType::HTTPS,
+    );
+    let serialized: String =
+        "{\"host\": \"localhost\", \"port\": 443, \"scheme\": \"https\"}".to_string();
 
     let deserialized: crate::models::core::Configuration =
         deserialize_payload(serialized).expect("error deserializing payload");

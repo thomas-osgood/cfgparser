@@ -7,11 +7,13 @@ fn test_read() -> Result<(), Box<dyn std::error::Error>> {
     let expected: models::core::Configuration = models::core::Configuration {
         host: "secrethost".to_string(),
         port: 8000,
+        scheme: models::core::SchemeType::default(),
     };
 
     let unexpected: models::core::Configuration = models::core::Configuration {
         host: "secrethost22".to_string(),
         port: 80,
+        scheme: models::core::SchemeType::default(),
     };
 
     let key: &str = "secret";
