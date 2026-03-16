@@ -7,6 +7,7 @@ fn test_configuration_struct_default() {
     let expected: Configuration = Configuration {
         host: "localhost".to_string(),
         port: 80,
+        scheme: SchemeType::default(),
     };
     let test_struct: Configuration = Configuration::default();
     assert_eq!(test_struct, expected);
@@ -19,6 +20,7 @@ fn test_configuration_deserialize_default() {
     let expected: Configuration = Configuration {
         host: "localhost".to_string(),
         port: 80,
+        scheme: SchemeType::default(),
     };
     let result: Configuration = serde_json::from_str(test).unwrap();
 
