@@ -130,8 +130,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     let key: &[u8] = convert_key_from_c(&raw_key);
 
     // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
-    {
+    let configuration: models::core::Configuration = match read_self(key) {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };
