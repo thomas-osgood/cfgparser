@@ -1,6 +1,11 @@
 #[cfg(test)]
 mod unit_tests;
 
+pub enum SchemeType {
+    HTTP,
+    HTTPS,
+}
+
 #[derive(serde::Deserialize, Debug, PartialEq, Eq)]
 pub struct Configuration {
     pub host: String,
