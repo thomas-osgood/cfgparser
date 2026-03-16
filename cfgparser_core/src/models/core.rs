@@ -2,6 +2,7 @@
 mod unit_tests;
 
 #[derive(Debug, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum SchemeType {
     HTTP,
     HTTPS,
