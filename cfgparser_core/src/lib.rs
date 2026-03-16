@@ -22,6 +22,14 @@
 //! 3. free_memory() - function designed to free the char* created by read_cfg()
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
+//!
+//! 4. read_self() - ease of use rust function designed to extract the configuration
+//! from the current binary. this takes in a key and will create its own SelfExtractor
+//! and pass it to the read() function.
+//!
+//! 5. read_cfg_from_file() - function designed to be part of a shared object or DLL
+//! that can be used by C, Python, etc programs. this returns a c*  holding the
+//! "address:port" from the configuration extracted from the given file.
 
 pub mod extractor;
 pub mod models;
@@ -111,6 +119,13 @@ where
     Ok(transformer::core::deserialize_payload(decoded)?)
 }
 
+/// ease-of-use function designed to call read() with a SelfExtractor
+/// and the passed in key.
+pub fn read_self(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+    let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
+    read(reader, key)
+}
+
 #[no_mangle]
 /// function designed to read the configuration bytes and
 /// return the C2 address. this will read the data from the
@@ -123,8 +138,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     let key: &[u8] = convert_key_from_c(&raw_key);
 
     // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read(extractor::core::SelfExtractor, key)
-    {
+    let configuration: models::core::Configuration = match read_self(key) {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };
