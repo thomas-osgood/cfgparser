@@ -31,6 +31,21 @@ impl Default for Configuration {
     }
 }
 
+impl Default for SchemeType {
+    fn default() -> Self {
+        SchemeType::HTTP
+    }
+}
+
+impl ToString for SchemeType {
+    fn to_string(&self) -> String {
+        match *self {
+            SchemeType::HTTP => "http".to_string(),
+            SchemeType::HTTPS => "https".to_string(),
+        }
+    }
+}
+
 /// default port for JSON deserialize if the field is not present.
 fn default_port() -> i64 {
     80
