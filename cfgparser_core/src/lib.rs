@@ -44,6 +44,9 @@ use windows::Win32::{
 #[cfg(test)]
 mod unit_tests;
 
+/// custom type defining the standard return for the rust read functions.
+pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn std::error::Error>>;
+
 /// helper function deisgned to take a key passed in as a C string
 /// and convert it to a byte array.
 fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> &[u8] {
