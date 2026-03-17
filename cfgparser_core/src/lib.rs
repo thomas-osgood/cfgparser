@@ -131,6 +131,16 @@ pub fn read_self(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std:
     read(reader, key)
 }
 
+/// ease-of-use function designed to call read() with a FileExtractor
+/// built using filename passed in and the passed in key.
+pub fn read_from_file(
+    filename: String,
+    key: &[u8],
+) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+    let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
+    read(reader, key)
+}
+
 #[no_mangle]
 /// function designed to read the configuration bytes and
 /// return the C2 address. this will read the data from the
