@@ -30,6 +30,10 @@
 //! 5. read_cfg_from_file() - function designed to be part of a shared object or DLL
 //! that can be used by C, Python, etc programs. this returns a c*  holding the
 //! "address:port" from the configuration extracted from the given file.
+//!
+//! 6. read_from_file() - ease of use rust function designed to extract the configuration
+//! from a specified file. this takes in a filename (string) and key and will create its
+//! own FileExtractor and pass it to the read() function.
 
 pub mod extractor;
 pub mod models;
