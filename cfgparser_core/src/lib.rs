@@ -30,6 +30,10 @@
 //! 5. read_cfg_from_file() - function designed to be part of a shared object or DLL
 //! that can be used by C, Python, etc programs. this returns a c*  holding the
 //! "address:port" from the configuration extracted from the given file.
+//!
+//! 6. read_from_file() - ease of use rust function designed to extract the configuration
+//! from a specified file. this takes in a filename (string) and key and will create its
+//! own FileExtractor and pass it to the read() function.
 
 pub mod extractor;
 pub mod models;
@@ -43,6 +47,9 @@ use windows::Win32::{
 
 #[cfg(test)]
 mod unit_tests;
+
+/// custom type defining the standard return for the rust read functions.
+pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn std::error::Error>>;
 
 /// helper function deisgned to take a key passed in as a C string
 /// and convert it to a byte array.
@@ -98,10 +105,7 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
-pub fn read<T>(
-    reader: T,
-    key: &[u8],
-) -> Result<models::core::Configuration, Box<dyn std::error::Error>>
+pub fn read<T>(reader: T, key: &[u8]) -> CfgResult
 where
     T: extractor::core::CfgExtractor,
 {
@@ -126,8 +130,15 @@ where
 
 /// ease-of-use function designed to call read() with a SelfExtractor
 /// and the passed in key.
-pub fn read_self(key: &[u8]) -> Result<models::core::Configuration, Box<dyn std::error::Error>> {
+pub fn read_self(key: &[u8]) -> CfgResult {
     let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
+    read(reader, key)
+}
+
+/// ease-of-use function designed to call read() with a FileExtractor
+/// built using filename passed in and the passed in key.
+pub fn read_from_file(filename: String, key: &[u8]) -> CfgResult {
+    let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
     read(reader, key)
 }
 
@@ -180,16 +191,13 @@ pub extern "C" fn read_cfg_from_file(
         Err(_) => return std::ptr::null(),
     };
 
-    let reader: extractor::core::FileExtractor = extractor::core::FileExtractor {
-        filename: filename.to_string(),
-    };
-
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
 
     // read the Configuration from the target file.
-    let configuration: models::core::Configuration = match read(reader, key) {
+    let configuration: models::core::Configuration = match read_from_file(filename.to_string(), key)
+    {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };
