@@ -22,7 +22,10 @@ impl CfgByteReader for std::io::Cursor<Vec<u8>> {}
 
 /// generic function designed to read the configuration bytes from
 /// a file and return either a Vec<u8> or an error.
-fn read_bytes(mut fptr: std::fs::File) -> std::io::Result<Vec<u8>> {
+fn read_bytes<R>(mut fptr: R) -> std::io::Result<Vec<u8>>
+where
+    R: std::io::Read + std::io::Seek,
+{
     let size_start: i64 = SZ_SIZEBUFF as i64 * -1;
 
     // allocate buffer that will hold the size bytes.
