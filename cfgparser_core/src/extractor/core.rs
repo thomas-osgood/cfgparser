@@ -1,5 +1,3 @@
-use std::io::{Read, Seek};
-
 /// constant size of the byte buffer that will be used
 /// to hold the bytes representing the size of the
 /// configuration array.
