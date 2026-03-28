@@ -15,7 +15,8 @@ pub trait CfgExtractor {
 }
 
 /// generic function designed to read the configuration bytes from
-/// a file and return either a Vec<u8> or an error.
+/// a reader that implements the Read + Seek traits and return
+/// either a Vec<u8> or an error.
 fn read_bytes<R>(mut reader: R) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
