@@ -83,6 +83,26 @@ impl CfgExtractor for FileExtractor {
     }
 }
 
+#[derive(Debug, Default)]
+/// struct designed to extract configuration bytes from
+/// a byte vector (Vec<u8>).
+pub struct BytesExtractor {
+    pub stream: Vec<u8>,
+}
+
+impl BytesExtractor {
+    pub fn new(stream: Vec<u8>) -> BytesExtractor {
+        BytesExtractor { stream }
+    }
+}
+
+impl CfgExtractor for BytesExtractor {
+    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+        let stream: std::io::Cursor<&Vec<u8>> = std::io::Cursor::new(&self.stream);
+        read_bytes(stream)
+    }
+}
+
 #[cfg(test)]
 /// extractor struct meant to be used in unit tests only.
 pub struct TestExtractor;
