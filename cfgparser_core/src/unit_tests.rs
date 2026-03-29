@@ -1,9 +1,13 @@
 use super::*;
 
+/// helper type that represents the generic return type used
+/// by most tests.
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
 #[test]
 /// test designed to confirm the "read()" function operates as
 /// expected and returns the proper result.
-fn test_read() -> Result<(), Box<dyn std::error::Error>> {
+fn test_read() -> TestResult {
     let expected: models::core::Configuration = models::core::Configuration {
         host: "secrethost".to_string(),
         port: 8000,
@@ -30,7 +34,7 @@ fn test_read() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 /// test designed to confirm the "read()" function operates as expected
 /// when passed a BytesExtractor struct.
-fn test_read_bytesextractor() -> Result<(), Box<dyn std::error::Error>> {
+fn test_read_bytesextractor() -> TestResult {
     let expected: models::core::Configuration = models::core::Configuration {
         host: "malserver".to_string(),
         port: 9999,
@@ -57,7 +61,7 @@ fn test_read_bytesextractor() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 /// test designed to confirm the "read_from_vec()" function operates as expected.
-fn test_read_from_vec() -> Result<(), Box<dyn std::error::Error>> {
+fn test_read_from_vec() -> TestResult {
     let bytes_vec: Vec<u8> = vec![
         116, 104, 105, 115, 32, 105, 115, 32, 97, 32, 98, 117, 110, 99, 104, 32, 111, 102, 32, 106,
         117, 110, 107, 32, 100, 97, 116, 97, 32, 116, 104, 97, 116, 32, 105, 115, 32, 103, 111,
