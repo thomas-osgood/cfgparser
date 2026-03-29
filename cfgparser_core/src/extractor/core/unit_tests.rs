@@ -3,7 +3,7 @@ use super::*;
 #[test]
 /// test designed to confirm the expected functionality of
 /// the read_bytes function.
-fn test_read_bytes() {
+fn test_read_bytes() -> Result<(), Box<dyn std::error::Error>> {
     let expected: Vec<u8> = vec![
         22, 24, 40, 29, 7, 64, 47, 82, 59, 15, 28, 6, 43, 31, 84, 27, 3, 42, 60, 9, 16, 15, 56, 30,
         6, 26, 40, 17, 59, 38, 57, 22, 0, 65, 47, 67, 40, 8, 29, 2, 60, 53, 9, 71, 42, 32, 22, 5,
@@ -29,9 +29,11 @@ fn test_read_bytes() {
         59, 83, 58, 34, 40, 29, 1, 59, 51, 21, 17, 28, 57, 88, 0, 0, 0, 0, 0, 0, 0, 72,
     ]);
 
-    let result: Vec<u8> = read_bytes(test_cur).unwrap();
-    let result2: Vec<u8> = test_vec.extract_cfg_bytes().unwrap();
+    let result: Vec<u8> = read_bytes(test_cur)?;
+    let result2: Vec<u8> = test_vec.extract_cfg_bytes()?;
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected);
+
+    Ok(())
 }
