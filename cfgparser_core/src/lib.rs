@@ -34,6 +34,10 @@
 //! 6. read_from_file() - ease of use rust function designed to extract the configuration
 //! from a specified file. this takes in a filename (string) and key and will create its
 //! own FileExtractor and pass it to the read() function.
+//!
+//! 7. read_from_vec() - ease of use rust function designed to extract the configuration
+//! from a specified Vec<u8>. this takes in the Vec<u8> and key and will create its own
+//! BytesExtractor and pass it to the read() function.
 
 pub mod extractor;
 pub mod models;
@@ -139,6 +143,13 @@ pub fn read_self(key: &[u8]) -> CfgResult {
 /// built using filename passed in and the passed in key.
 pub fn read_from_file(filename: String, key: &[u8]) -> CfgResult {
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
+    read(reader, key)
+}
+
+/// ease-of-use function designed to call read() with a BytesExtractor
+/// built using hte Vec<u8> passed in and the key passed in.
+pub fn read_from_vec(stream: Vec<u8>, key: &[u8]) -> CfgResult {
+    let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(stream);
     read(reader, key)
 }
 
