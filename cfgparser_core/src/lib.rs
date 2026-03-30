@@ -11,32 +11,32 @@
 //!
 //! functions of note:
 //!
-//! 1. read() - rust function that will extract and process the config bytes
+//! 1. `read()` - rust function that will extract and process the config bytes
 //! then return a Configuration struct (or error). meant to be called by
 //! other rust programs.
 //!
-//! 2. read_cfg() - function designed to be part of a shared object or DLL
+//! 2. `read_cfg()` - function designed to be part of a shared object or DLL
 //! that can be used by C, Python, etc programs. this returns a char* holding
 //! the "address:port" from the configuration.
 //!
-//! 3. free_memory() - function designed to free the char* created by read_cfg()
+//! 3. `free_memory()` - function designed to free the char* created by read_cfg()
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 //!
-//! 4. read_self() - ease of use rust function designed to extract the configuration
+//! 4. `read_self()` - ease of use rust function designed to extract the configuration
 //! from the current binary. this takes in a key and will create its own SelfExtractor
 //! and pass it to the read() function.
 //!
-//! 5. read_cfg_from_file() - function designed to be part of a shared object or DLL
+//! 5. `read_cfg_from_file()` - function designed to be part of a shared object or DLL
 //! that can be used by C, Python, etc programs. this returns a c*  holding the
 //! "address:port" from the configuration extracted from the given file.
 //!
-//! 6. read_from_file() - ease of use rust function designed to extract the configuration
+//! 6. `read_from_file()` - ease of use rust function designed to extract the configuration
 //! from a specified file. this takes in a filename (string) and key and will create its
 //! own FileExtractor and pass it to the read() function.
 //!
-//! 7. read_from_vec() - ease of use rust function designed to extract the configuration
-//! from a specified Vec<u8>. this takes in the Vec<u8> and key and will create its own
+//! 7. `read_from_vec()` - ease of use rust function designed to extract the configuration
+//! from a specified `Vec<u8>`. this takes in the `Vec<u8>` and key and will create its own
 //! BytesExtractor and pass it to the read() function.
 
 pub mod extractor;
@@ -147,7 +147,7 @@ pub fn read_from_file(filename: String, key: &[u8]) -> CfgResult {
 }
 
 /// ease-of-use function designed to call read() with a BytesExtractor
-/// built using hte Vec<u8> passed in and the key passed in.
+/// built using the `Vec<u8>` passed in and the key passed in.
 pub fn read_from_vec(stream: Vec<u8>, key: &[u8]) -> CfgResult {
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(stream);
     read(reader, key)
@@ -175,7 +175,7 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 
 #[no_mangle]
 /// function designed to take in a filename and key, extract configuration
-/// information from the target and return a "<host>:<port>" string.
+/// information from the target and return a `<host>:<port>` string.
 ///
 /// this performs the same reading logic as "read_cfg" with the only difference
 /// being it is not reading from the current binary, but from a user-specified file.
@@ -217,7 +217,7 @@ pub extern "C" fn read_cfg_from_file(
 }
 
 #[no_mangle]
-/// function designed to safely free a char* pointer that
+/// function designed to safely free a `char*` pointer that
 /// has been allocated by rust.
 ///
 /// this should be called when the caller is done with the
