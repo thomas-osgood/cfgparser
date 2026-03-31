@@ -7,6 +7,8 @@ pub mod viginere;
 pub mod xor;
 
 #[derive(Debug)]
+/// enum defining the various forms of encryption that are supported
+/// by this library.
 pub enum EncryptionType {
     Xor,
     Viginere,
