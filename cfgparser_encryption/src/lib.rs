@@ -5,3 +5,9 @@
 
 pub mod viginere;
 pub mod xor;
+
+#[derive(Debug)]
+pub enum EncryptionType {
+    Xor,
+    Viginere,
+}
