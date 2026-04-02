@@ -13,21 +13,21 @@ impl XORCipher {
     }
 }
 
-/// implementation of the Decryptor trait for XORCipher.
-///
-/// this will call the encrypt_decrypt function with the
-/// passed in ciphertext and the XORCipher's key.
 impl crate::Decryptor for XORCipher {
+    /// implementation of the Decryptor trait for XORCipher.
+    ///
+    /// this will call the encrypt_decrypt function with the
+    /// passed in ciphertext and the XORCipher's key.
     fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(encrypt_decrypt(self.key.clone(), ciphertext))
     }
 }
 
-/// implementation of the Encryptor trait for XORCipher.
-///
-/// this will call the encrypt_decrypt function with the
-/// passed in plaintext and the XORCipher's key.
 impl crate::Encryptor for XORCipher {
+    /// implementation of the Encryptor trait for XORCipher.
+    ///
+    /// this will call the encrypt_decrypt function with the
+    /// passed in plaintext and the XORCipher's key.
     fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(encrypt_decrypt(self.key.clone(), plaintext))
     }
