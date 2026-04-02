@@ -1,4 +1,5 @@
 use super::*;
+use crate::{Decryptor, Encryptor};
 
 #[test]
 /// test designed to make sure the decrypt function works as expected.
@@ -14,8 +15,10 @@ fn test_decrypt() {
     let expected: Vec<u8> = "hello everybody".into();
     let expected2: Vec<u8> = "Hello everybody".into();
 
-    let result: Vec<u8> = decrypt(ciphertext, key.clone()).unwrap();
-    let result2: Vec<u8> = decrypt(ciphertext2, key).unwrap();
+    let cipher: ViginereCipher = ViginereCipher { key };
+
+    let result: Vec<u8> = cipher.decrypt(ciphertext).unwrap();
+    let result2: Vec<u8> = cipher.decrypt(ciphertext2).unwrap();
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected2);
@@ -36,8 +39,10 @@ fn test_encrypt() {
     let expected: Vec<u8> = "alpcs xciicuvhp".into();
     let expected2: Vec<u8> = "Alpcs xciicuvhp".into();
 
-    let result: Vec<u8> = encrypt(plaintext, key.clone()).unwrap();
-    let result2: Vec<u8> = encrypt(plaintext2, key).unwrap();
+    let cipher: ViginereCipher = ViginereCipher { key };
+
+    let result: Vec<u8> = cipher.encrypt(plaintext).unwrap();
+    let result2: Vec<u8> = cipher.encrypt(plaintext2).unwrap();
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected2);
