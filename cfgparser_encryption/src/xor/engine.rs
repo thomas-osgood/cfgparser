@@ -2,7 +2,7 @@
 mod unit_tests;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
-/// func designed to implement Decrypt and Encrypt for an XOR cipher.
+/// struct designed to implement Decrypt and Encrypt for an XOR cipher.
 pub struct XORCipher {
     pub key: Vec<u8>,
 }
