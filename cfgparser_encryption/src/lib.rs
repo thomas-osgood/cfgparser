@@ -26,3 +26,15 @@ pub trait Decryptor {
     /// should be consistent.
     fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
 }
+
+/// generic trait designed to describe a structure that can decrypt
+/// ciphertext during a configuration extraction.
+pub trait Encryptor {
+    /// function designed to take in a plaintext vector, manipulate
+    /// it and return a ciphertext vector.
+    ///
+    /// this function's logic will differ between the various implementations
+    /// of the trait, but the overall process (plaintext in, ciphertext out)
+    /// should be consistent.
+    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
+}
