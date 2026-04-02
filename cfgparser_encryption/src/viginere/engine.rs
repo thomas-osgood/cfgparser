@@ -35,8 +35,11 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
 }
 
 impl ViginereCipher {
-    pub fn new(key: Vec<u8>) -> ViginereCipher {
-        ViginereCipher { key }
+    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+        if key.len() < 1 {
+            return Err("key must be of non-zero length".into());
+        }
+        Ok(ViginereCipher { key })
     }
 }
 
