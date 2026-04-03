@@ -31,3 +31,16 @@ pub fn transform_payload(key: &[u8], raw_payload: &[u8]) -> Result<Vec<u8>, base
     // base64-decode the payload and save the result
     base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)
 }
+
+pub fn transform_payload_decryptor<D>(
+    decryptor: D,
+    raw_payload: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>>
+where
+    D: cfgparser_encryption::Decryptor,
+{
+    // XOR decrypt the raw_payload bytes.
+    let plaintext: Vec<u8> = decryptor.decrypt(raw_payload.to_vec())?;
+    // base64-decode the payload and save the result
+    Ok(base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)?)
+}
