@@ -23,27 +23,7 @@ pub fn deserialize_payload(
 ///
 /// 1. decrypt bytes
 /// 2. base64-decode plaintext
-pub fn transform_payload(
-    key: &[u8],
-    raw_payload: &[u8],
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    // create XORCipher decryptor to use
-    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
-
-    // call the function that performs the main logic and
-    // return that result
-    transform_payload_decryptor(decryptor, raw_payload)
-}
-
-/// function designed to convert the raw bytes read from
-/// the end of the file into a configuration.
-///
-/// process:
-///
-/// 1. decrypt bytes
-/// 2. base64-decode plaintext
-pub fn transform_payload_decryptor<D>(
+pub fn transform_payload<D>(
     decryptor: D,
     raw_payload: &[u8],
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>>
