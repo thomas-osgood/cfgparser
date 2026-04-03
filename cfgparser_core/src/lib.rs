@@ -109,6 +109,36 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
+pub fn read_with_decryptor<T, D>(reader: T, decryptor: D) -> CfgResult
+where
+    T: extractor::core::CfgExtractor,
+    D: cfgparser_encryption::Decryptor,
+{
+    // read configuration bytes from current binary.
+    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
+
+    // decrypt and base64 decode the bytes extracted in the previous
+    // step to get a string representation of the JSON structure holding
+    // the configuration information.
+    let decoded_vec: Vec<u8> = transformer::core::transform_payload(decryptor, &cfg_bytes)?;
+    let decoded: String = String::from_utf8_lossy(&decoded_vec).to_string();
+
+    // JSON deserialize the string acquired from the process above into
+    // a Configuration struct.
+    Ok(transformer::core::deserialize_payload(decoded)?)
+}
+
+/// function designed to run through the process of extracting,
+/// transforming and deserializing configuration data from the
+/// current binary.
+///
+/// for most use-cases the `extractor::core::SelfExtractor` struct
+/// is what should be passed in as the `reader`. this struct implements
+/// logic that will read the configuration bytes from the end of
+/// the current binary.
+///
+/// this creates an XORDecryptor using the key and calls the read_with_decryptor
+/// function to extract the CfgResult.
 pub fn read<T>(reader: T, key: &[u8]) -> CfgResult
 where
     T: extractor::core::CfgExtractor,
@@ -118,18 +148,10 @@ where
         return Err("no encryption key specified".into());
     }
 
-    // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
 
-    // XOR decrypt and base64 decode the bytes extracted in the previous
-    // step to get a string representation of the JSON structure holding
-    // the configuration information.
-    let decoded_vec: Vec<u8> = transformer::core::transform_payload(key, &cfg_bytes)?;
-    let decoded: String = String::from_utf8_lossy(&decoded_vec).to_string();
-
-    // JSON deserialize the string acquired from the process above into
-    // a Configuration struct.
-    Ok(transformer::core::deserialize_payload(decoded)?)
+    read_with_decryptor(reader, decryptor)
 }
 
 /// ease-of-use function designed to call read() with a SelfExtractor
