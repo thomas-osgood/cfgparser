@@ -36,6 +36,13 @@ pub fn transform_payload(
     transform_payload_decryptor(decryptor, raw_payload)
 }
 
+/// function designed to convert the raw bytes read from
+/// the end of the file into a configuration.
+///
+/// process:
+///
+/// 1. decrypt bytes
+/// 2. base64-decode plaintext
 pub fn transform_payload_decryptor<D>(
     decryptor: D,
     raw_payload: &[u8],
