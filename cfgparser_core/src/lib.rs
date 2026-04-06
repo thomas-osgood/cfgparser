@@ -164,6 +164,9 @@ where
 /// end of the binary, XOR decrypt it, Base64 decode,
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
+///
+/// this calls `read_cfg_with_encryption` and specifies the XOR
+/// encryption type in the function arguments.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
     read_cfg_with_encryption(
         raw_key,
