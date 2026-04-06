@@ -236,6 +236,24 @@ pub extern "C" fn read_cfg_from_file(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
 ) -> *const std::ffi::c_char {
+    read_cfg_from_file_with_encryption(
+        raw_filename,
+        raw_key,
+        cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+    )
+}
+
+#[no_mangle]
+/// function designed to take in a filename and key, extract configuration
+/// information from the target and return a `<host>:<port>` string.
+///
+/// this performs the same reading logic as "read_cfg_with_encryption" with the only difference
+/// being it is not reading from the current binary, but from a user-specified file.
+pub extern "C" fn read_cfg_from_file_with_encryption(
+    raw_filename: *const std::ffi::c_char,
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+) -> *const std::ffi::c_char {
     let filename: &str;
 
     if raw_filename.is_null() {
@@ -258,19 +276,40 @@ pub extern "C" fn read_cfg_from_file(
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
-    // create an XORDecryptor by default.
-    //
-    // high possibility this will be updated later to be
-    // determined by the user's input.
-    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
 
-    // read the Configuration from the target file.
-    let configuration: models::core::Configuration =
-        match read_from_file(filename.to_string(), decryptor) {
-            Ok(result) => result,
-            Err(_) => return std::ptr::null(),
-        };
+    // attempt to convert the user input into a rust i32 var.
+    //
+    // if this fails, NULL will be returned.
+    let enc_type_i32: i32 = match enc_type.try_into() {
+        Ok(int_val) => int_val,
+        Err(_) => return std::ptr::null(),
+    };
+
+    // create the decryptor based on the user's input. this will compare
+    // the int with the enum to determine what kind of decryptor to create.
+    //
+    // if an invalid int is passed in, or an error occurs, NULL will be returned.
+    let read_result: CfgResult;
+    if enc_type_i32 == cfgparser_encryption::EncryptionType::Xor as i32 {
+        let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+            cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+        read_result = read_from_file(filename.to_string(), decryptor);
+    } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Viginere as i32 {
+        let decryptor: cfgparser_encryption::viginere::engine::ViginereCipher =
+            match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
+                Ok(vc) => vc,
+                Err(_) => return std::ptr::null(),
+            };
+        read_result = read_from_file(filename.to_string(), decryptor);
+    } else {
+        read_result = Err("invalid encryption type".into());
+    }
+
+    // read the Configuration from the current binary.
+    let configuration: models::core::Configuration = match read_result {
+        Ok(result) => result,
+        Err(_) => return std::ptr::null(),
+    };
 
     format_address_c(configuration)
 }
