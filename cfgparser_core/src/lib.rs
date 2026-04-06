@@ -16,10 +16,10 @@
 //! other rust programs.
 //!
 //! 2. `read_cfg()` - function designed to be part of a shared object or DLL
-//! that can be used by C, Python, etc programs. this returns a char* holding
+//! that can be used by C, Python, etc programs. this returns a `char*` holding
 //! the "address:port" from the configuration.
 //!
-//! 3. `free_memory()` - function designed to free the char* created by read_cfg()
+//! 3. `free_memory()` - function designed to free the `char*` created by read_cfg()
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 //!
@@ -28,7 +28,7 @@
 //! and pass it to the read() function.
 //!
 //! 5. `read_cfg_from_file()` - function designed to be part of a shared object or DLL
-//! that can be used by C, Python, etc programs. this returns a c*  holding the
+//! that can be used by C, Python, etc programs. this returns a `char*`  holding the
 //! "address:port" from the configuration extracted from the given file.
 //!
 //! 6. `read_from_file()` - ease of use rust function designed to extract the configuration
@@ -38,6 +38,16 @@
 //! 7. `read_from_vec()` - ease of use rust function designed to extract the configuration
 //! from a specified `Vec<u8>`. this takes in the `Vec<u8>` and key and will create its own
 //! BytesExtractor and pass it to the read() function.
+//!
+//! 8. `read_cfg_with_encryption()` - function designed to be part of a shard object or DLL
+//! that can be used by C, Python, etc programs. this returns a `char*` holding the address
+//! from the configuration. the encryption type passed in must match the EncryptionType enum
+//! selection the user wants to use.
+//!
+//! 9. `read_cfg_from_file_with_encryption()` - function designed to be part of a shard object or DLL
+//! that can be used by C, Python, etc programs. this returns a `char*` holding the address
+//! from the configuration. the encryption type passed in must match the EncryptionType enum
+//! selection the user wants to use.
 
 pub mod extractor;
 pub mod models;
