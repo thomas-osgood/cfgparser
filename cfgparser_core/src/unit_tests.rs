@@ -21,9 +21,11 @@ fn test_read() -> TestResult {
     };
 
     let key: &str = "secret";
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
     let reader: extractor::core::TestExtractor = extractor::core::TestExtractor;
 
-    let extracted: models::core::Configuration = read(reader, key.as_bytes())?;
+    let extracted: models::core::Configuration = read(reader, decryptor)?;
 
     assert_eq!(extracted, expected);
     assert_ne!(extracted, unexpected);
@@ -52,7 +54,9 @@ fn test_read_bytesextractor() -> TestResult {
     ]);
 
     let key: &str = "sabre";
-    let extracted: models::core::Configuration = read(reader, key.as_bytes())?;
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+    let extracted: models::core::Configuration = read(reader, decryptor)?;
 
     assert_eq!(extracted, expected);
 
@@ -77,8 +81,10 @@ fn test_read_from_vec() -> TestResult {
         scheme: models::core::SchemeType::HTTPS,
     };
     let key: &str = "sabre";
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
 
-    let extracted: models::core::Configuration = read_from_vec(bytes_vec, key.as_bytes())?;
+    let extracted: models::core::Configuration = read_from_vec(bytes_vec, decryptor)?;
 
     assert_eq!(extracted, expected);
 

@@ -109,22 +109,18 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
-pub fn read<T>(reader: T, key: &[u8]) -> CfgResult
+pub fn read<T, D>(reader: T, decryptor: D) -> CfgResult
 where
     T: extractor::core::CfgExtractor,
+    D: cfgparser_encryption::Decryptor,
 {
-    // return an error if no key has been specified
-    if key.len() < 1 {
-        return Err("no encryption key specified".into());
-    }
-
     // read configuration bytes from current binary.
     let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
 
-    // XOR decrypt and base64 decode the bytes extracted in the previous
+    // decrypt and base64 decode the bytes extracted in the previous
     // step to get a string representation of the JSON structure holding
     // the configuration information.
-    let decoded_vec: Vec<u8> = transformer::core::transform_payload(key, &cfg_bytes)?;
+    let decoded_vec: Vec<u8> = transformer::core::transform_payload(decryptor, &cfg_bytes)?;
     let decoded: String = String::from_utf8_lossy(&decoded_vec).to_string();
 
     // JSON deserialize the string acquired from the process above into
@@ -133,24 +129,33 @@ where
 }
 
 /// ease-of-use function designed to call read() with a SelfExtractor
-/// and the passed in key.
-pub fn read_self(key: &[u8]) -> CfgResult {
+/// and the passed in decryptor.
+pub fn read_self<D>(decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 /// ease-of-use function designed to call read() with a FileExtractor
-/// built using filename passed in and the passed in key.
-pub fn read_from_file(filename: String, key: &[u8]) -> CfgResult {
+/// built using filename passed in and the passed in decryptor.
+pub fn read_from_file<D>(filename: String, decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 /// ease-of-use function designed to call read() with a BytesExtractor
-/// built using the `Vec<u8>` passed in and the key passed in.
-pub fn read_from_vec(stream: Vec<u8>, key: &[u8]) -> CfgResult {
+/// built using the `Vec<u8>` passed in and the decryptor passed in.
+pub fn read_from_vec<D>(stream: Vec<u8>, decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(stream);
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 #[no_mangle]
@@ -163,9 +168,15 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
+    // create an XORDecryptor by default.
+    //
+    // high possibility this will be updated later to be
+    // determined by the user's input.
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
 
     // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read_self(key) {
+    let configuration: models::core::Configuration = match read_self(decryptor) {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };
@@ -205,13 +216,19 @@ pub extern "C" fn read_cfg_from_file(
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
+    // create an XORDecryptor by default.
+    //
+    // high possibility this will be updated later to be
+    // determined by the user's input.
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
 
     // read the Configuration from the target file.
-    let configuration: models::core::Configuration = match read_from_file(filename.to_string(), key)
-    {
-        Ok(result) => result,
-        Err(_) => return std::ptr::null(),
-    };
+    let configuration: models::core::Configuration =
+        match read_from_file(filename.to_string(), decryptor) {
+            Ok(result) => result,
+            Err(_) => return std::ptr::null(),
+        };
 
     format_address_c(configuration)
 }
