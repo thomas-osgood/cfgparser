@@ -167,6 +167,10 @@ where
 ///
 /// this calls `read_cfg_with_encryption` and specifies the XOR
 /// encryption type in the function arguments.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
     read_cfg_with_encryption(
         raw_key,
@@ -181,6 +185,10 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 /// passed in by the user, Base64 decode, JSON decode it, then
 /// grab the address and port from the Configuration struct that
 /// resulted from the JSON decoding.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg_with_encryption(
     raw_key: *const std::ffi::c_char,
     enc_type: std::ffi::c_int,
@@ -232,6 +240,10 @@ pub extern "C" fn read_cfg_with_encryption(
 ///
 /// this calls `read_cfg_from_file_with_encryption` and specified XOR as
 /// the encryption type.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg_from_file(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
@@ -249,6 +261,10 @@ pub extern "C" fn read_cfg_from_file(
 ///
 /// this performs the same reading logic as `read_cfg_with_encryption` with the only difference
 /// being it is not reading from the current binary, but from a user-specified file.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg_from_file_with_encryption(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
