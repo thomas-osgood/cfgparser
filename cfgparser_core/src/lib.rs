@@ -165,23 +165,10 @@ where
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
-    // if null is passed in as the key, use q as the default;
-    // otherwise use the char* key passed in.
-    let key: &[u8] = convert_key_from_c(&raw_key);
-    // create an XORDecryptor by default.
-    //
-    // high possibility this will be updated later to be
-    // determined by the user's input.
-    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
-
-    // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read_self(decryptor) {
-        Ok(result) => result,
-        Err(_) => return std::ptr::null(),
-    };
-
-    format_address_c(configuration)
+    read_cfg_with_encryption(
+        raw_key,
+        cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+    )
 }
 
 #[no_mangle]
