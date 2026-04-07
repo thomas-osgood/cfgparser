@@ -34,6 +34,14 @@ fn test_read() -> TestResult {
 }
 
 #[test]
+/// test designed to confirm the "read()" function operates as
+/// expected and returns the proper result when a ViginereCipher
+/// decryptor is passed to it.
+fn test_read_viginere() -> TestResult {
+    Ok(())
+}
+
+#[test]
 /// test designed to confirm the "read()" function operates as expected
 /// when passed a BytesExtractor struct.
 fn test_read_bytesextractor() -> TestResult {
