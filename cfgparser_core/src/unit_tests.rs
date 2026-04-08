@@ -1,5 +1,3 @@
-use cfgparser_encryption::Decryptor;
-
 use super::*;
 
 /// helper type that represents the generic return type used
@@ -46,10 +44,15 @@ fn test_read_viginere() -> TestResult {
             Ok(c) => c,
             Err(e) => return Err(e),
         };
-    let expected: Vec<u8> = b"this is a secret message".to_vec();
-    let ciphertext: Vec<u8> = b"llkj ml k wcuvgk qxcwyyi".to_vec();
+    let expected: models::core::Configuration = models::core::Configuration::new(
+        "secrethost".to_string(),
+        1234,
+        models::core::SchemeType::HTTP,
+    );
+    let ciphertext: Vec<u8> = b"hello there everybodywcLff3G0SnmyMpEpR3TpbYlxt3UbVGYagI9phVS6MBWcOqUlSGHrC2jcfPEmMaEkrLK0mGH9\x00\x00\x00\x00\x00\x00\x00H".to_vec();
+    let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(ciphertext);
 
-    let plaintext: Vec<u8> = match cipher1.decrypt(ciphertext) {
+    let plaintext: models::core::Configuration = match read(reader, cipher1) {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
