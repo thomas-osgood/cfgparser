@@ -1,3 +1,5 @@
+use cfgparser_encryption::Decryptor;
+
 use super::*;
 
 /// helper type that represents the generic return type used
@@ -38,6 +40,22 @@ fn test_read() -> TestResult {
 /// expected and returns the proper result when a ViginereCipher
 /// decryptor is passed to it.
 fn test_read_viginere() -> TestResult {
+    let key: Vec<u8> = b"secretkey".to_vec();
+    let cipher1: cfgparser_encryption::viginere::engine::ViginereCipher =
+        match cfgparser_encryption::viginere::engine::ViginereCipher::new(key) {
+            Ok(c) => c,
+            Err(e) => return Err(e),
+        };
+    let expected: Vec<u8> = b"this is a secret message".to_vec();
+    let ciphertext: Vec<u8> = b"llkj ml k wcuvgk qxcwyyi".to_vec();
+
+    let plaintext: Vec<u8> = match cipher1.decrypt(ciphertext) {
+        Ok(result) => result,
+        Err(e) => return Err(e),
+    };
+
+    assert_eq!(plaintext, expected);
+
     Ok(())
 }
 
