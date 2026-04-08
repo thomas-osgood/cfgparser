@@ -50,14 +50,23 @@ fn test_read_viginere() -> TestResult {
         models::core::SchemeType::HTTP,
     );
     let ciphertext: Vec<u8> = b"hello there everybodywcLff3G0SnmyMpEpR3TpbYlxt3UbVGYagI9phVS6MBWcOqUlSGHrC2jcfPEmMaEkrLK0mGH9\x00\x00\x00\x00\x00\x00\x00H".to_vec();
+    let ciphertext2: Vec<u8> = b"wcLff3G0SnmyMpEpR3TpbYlxt3UbVGYagI9phVS6MBWcOqUlSGHrC2jcfPEmMaEkrLK0mGH9\x00\x00\x00\x00\x00\x00\x00H".to_vec();
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(ciphertext);
+    let reader2: extractor::core::BytesExtractor =
+        extractor::core::BytesExtractor::new(ciphertext2);
 
-    let plaintext: models::core::Configuration = match read(reader, cipher1) {
+    let plaintext: models::core::Configuration = match read(reader, cipher1.clone()) {
+        Ok(result) => result,
+        Err(e) => return Err(e),
+    };
+
+    let plaintext2: models::core::Configuration = match read(reader2, cipher1) {
         Ok(result) => result,
         Err(e) => return Err(e),
     };
 
     assert_eq!(plaintext, expected);
+    assert_eq!(plaintext2, expected);
 
     Ok(())
 }
