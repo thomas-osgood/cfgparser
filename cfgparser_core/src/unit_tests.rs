@@ -49,8 +49,19 @@ fn test_read_viginere() -> TestResult {
         1234,
         models::core::SchemeType::HTTP,
     );
-    let ciphertext: Vec<u8> = b"hello there everybodywcLff3G0SnmyMpEpR3TpbYlxt3UbVGYagI9phVS6MBWcOqUlSGHrC2jcfPEmMaEkrLK0mGH9\x00\x00\x00\x00\x00\x00\x00H".to_vec();
-    let ciphertext2: Vec<u8> = b"wcLff3G0SnmyMpEpR3TpbYlxt3UbVGYagI9phVS6MBWcOqUlSGHrC2jcfPEmMaEkrLK0mGH9\x00\x00\x00\x00\x00\x00\x00H".to_vec();
+    let ciphertext: Vec<u8> = vec![
+        104, 101, 108, 108, 111, 32, 116, 104, 101, 114, 101, 32, 101, 118, 101, 114, 121, 98, 111,
+        100, 121, 119, 99, 76, 102, 102, 51, 71, 48, 83, 110, 109, 121, 77, 112, 69, 112, 82, 51,
+        84, 112, 98, 89, 108, 120, 116, 51, 85, 98, 86, 71, 89, 97, 103, 73, 57, 112, 104, 86, 83,
+        54, 77, 66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109,
+        77, 97, 69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72,
+    ];
+    let ciphertext2: Vec<u8> = vec![
+        119, 99, 76, 102, 102, 51, 71, 48, 83, 110, 109, 121, 77, 112, 69, 112, 82, 51, 84, 112,
+        98, 89, 108, 120, 116, 51, 85, 98, 86, 71, 89, 97, 103, 73, 57, 112, 104, 86, 83, 54, 77,
+        66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109, 77, 97,
+        69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72,
+    ];
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(ciphertext);
     let reader2: extractor::core::BytesExtractor =
         extractor::core::BytesExtractor::new(ciphertext2);
