@@ -95,6 +95,12 @@ impl BytesExtractor {
         BytesExtractor { stream }
     }
 
+    /// function designed to return a clone of the vector that
+    /// is being held in the stream variable.
+    pub fn get_stream(&self) -> Vec<u8> {
+        self.stream.clone()
+    }
+
     /// function designed to overwrite the ByteExtractor's
     /// stream with a new stream.
     pub fn set_stream(&mut self, stream: Vec<u8>) {
