@@ -87,7 +87,7 @@ impl CfgExtractor for FileExtractor {
 /// struct designed to extract configuration bytes from
 /// a byte vector (`Vec<u8>`).
 pub struct BytesExtractor {
-    pub stream: Vec<u8>,
+    stream: Vec<u8>,
 }
 
 impl BytesExtractor {
