@@ -41,7 +41,7 @@ fn test_read_bytes() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 /// test designed to confirm the expected functionality of
 /// the `set_stream()` function of the BytesExtractor.
-fn test_byteextractor_set_stream() -> Result<(), Box<dyn std::error::Error>> {
+fn test_bytesextractor_set_stream() -> Result<(), Box<dyn std::error::Error>> {
     let expected: Vec<u8> = vec![
         22, 24, 40, 29, 7, 64, 47, 82, 59, 15, 28, 6, 43, 31, 84, 27, 3, 42, 60, 9, 16, 15, 56, 30,
         6, 26, 40, 17, 59, 38, 57, 22, 0, 65, 47, 67, 40, 8, 29, 2, 60, 53, 9, 71, 42, 32, 22, 5,
