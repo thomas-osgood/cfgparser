@@ -94,6 +94,12 @@ impl BytesExtractor {
     pub fn new(stream: Vec<u8>) -> BytesExtractor {
         BytesExtractor { stream }
     }
+
+    /// function designed to overwrite the ByteExtractor's
+    /// stream with a new stream.
+    pub fn set_stream(&mut self, stream: Vec<u8>) {
+        self.stream = stream;
+    }
 }
 
 impl CfgExtractor for BytesExtractor {
