@@ -16,10 +16,10 @@
 //! other rust programs.
 //!
 //! 2. `read_cfg()` - function designed to be part of a shared object or DLL
-//! that can be used by C, Python, etc programs. this returns a char* holding
+//! that can be used by C, Python, etc programs. this returns a `char*` holding
 //! the "address:port" from the configuration.
 //!
-//! 3. `free_memory()` - function designed to free the char* created by read_cfg()
+//! 3. `free_memory()` - function designed to free the `char*` created by read_cfg()
 //! because the memory is owned by rust and must be freed by rust when the caller
 //! is done with it. this is similar to the free() function in C.
 //!
@@ -28,7 +28,7 @@
 //! and pass it to the read() function.
 //!
 //! 5. `read_cfg_from_file()` - function designed to be part of a shared object or DLL
-//! that can be used by C, Python, etc programs. this returns a c*  holding the
+//! that can be used by C, Python, etc programs. this returns a `char*`  holding the
 //! "address:port" from the configuration extracted from the given file.
 //!
 //! 6. `read_from_file()` - ease of use rust function designed to extract the configuration
@@ -38,6 +38,16 @@
 //! 7. `read_from_vec()` - ease of use rust function designed to extract the configuration
 //! from a specified `Vec<u8>`. this takes in the `Vec<u8>` and key and will create its own
 //! BytesExtractor and pass it to the read() function.
+//!
+//! 8. `read_cfg_with_encryption()` - function designed to be part of a shard object or DLL
+//! that can be used by C, Python, etc programs. this returns a `char*` holding the address
+//! from the configuration. the encryption type passed in must match the EncryptionType enum
+//! selection the user wants to use.
+//!
+//! 9. `read_cfg_from_file_with_encryption()` - function designed to be part of a shard object or DLL
+//! that can be used by C, Python, etc programs. this returns a `char*` holding the address
+//! from the configuration. the encryption type passed in must match the EncryptionType enum
+//! selection the user wants to use.
 
 pub mod extractor;
 pub mod models;
@@ -109,22 +119,18 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
-pub fn read<T>(reader: T, key: &[u8]) -> CfgResult
+pub fn read<T, D>(reader: T, decryptor: D) -> CfgResult
 where
     T: extractor::core::CfgExtractor,
+    D: cfgparser_encryption::Decryptor,
 {
-    // return an error if no key has been specified
-    if key.len() < 1 {
-        return Err("no encryption key specified".into());
-    }
-
     // read configuration bytes from current binary.
     let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
 
-    // XOR decrypt and base64 decode the bytes extracted in the previous
+    // decrypt and base64 decode the bytes extracted in the previous
     // step to get a string representation of the JSON structure holding
     // the configuration information.
-    let decoded_vec: Vec<u8> = transformer::core::transform_payload(key, &cfg_bytes)?;
+    let decoded_vec: Vec<u8> = transformer::core::transform_payload(decryptor, &cfg_bytes)?;
     let decoded: String = String::from_utf8_lossy(&decoded_vec).to_string();
 
     // JSON deserialize the string acquired from the process above into
@@ -133,24 +139,33 @@ where
 }
 
 /// ease-of-use function designed to call read() with a SelfExtractor
-/// and the passed in key.
-pub fn read_self(key: &[u8]) -> CfgResult {
+/// and the passed in decryptor.
+pub fn read_self<D>(decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 /// ease-of-use function designed to call read() with a FileExtractor
-/// built using filename passed in and the passed in key.
-pub fn read_from_file(filename: String, key: &[u8]) -> CfgResult {
+/// built using filename passed in and the passed in decryptor.
+pub fn read_from_file<D>(filename: String, decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 /// ease-of-use function designed to call read() with a BytesExtractor
-/// built using the `Vec<u8>` passed in and the key passed in.
-pub fn read_from_vec(stream: Vec<u8>, key: &[u8]) -> CfgResult {
+/// built using the `Vec<u8>` passed in and the decryptor passed in.
+pub fn read_from_vec<D>(stream: Vec<u8>, decryptor: D) -> CfgResult
+where
+    D: cfgparser_encryption::Decryptor,
+{
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(stream);
-    read(reader, key)
+    read(reader, decryptor)
 }
 
 #[no_mangle]
@@ -159,13 +174,69 @@ pub fn read_from_vec(stream: Vec<u8>, key: &[u8]) -> CfgResult {
 /// end of the binary, XOR decrypt it, Base64 decode,
 /// JSON decode it, then grab the address and port from the
 /// Configuration struct that resulted from the JSON decoding.
+///
+/// this calls `read_cfg_with_encryption` and specifies the XOR
+/// encryption type in the function arguments.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi::c_char {
+    read_cfg_with_encryption(
+        raw_key,
+        cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+    )
+}
+
+#[no_mangle]
+/// function designed to read the configuration bytes and
+/// return the C2 address. this will read the data from the
+/// end of the binary, decrypt it based on the encryption type
+/// passed in by the user, Base64 decode, JSON decode it, then
+/// grab the address and port from the Configuration struct that
+/// resulted from the JSON decoding.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
+pub extern "C" fn read_cfg_with_encryption(
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+) -> *const std::ffi::c_char {
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
 
+    // attempt to convert the user input into a rust i32 var.
+    //
+    // if this fails, NULL will be returned.
+    let enc_type_i32: i32 = match enc_type.try_into() {
+        Ok(int_val) => int_val,
+        Err(_) => return std::ptr::null(),
+    };
+
+    // create the decryptor based on the user's input. this will compare
+    // the int with the enum to determine what kind of decryptor to create.
+    //
+    // if an invalid int is passed in, or an error occurs, NULL will be returned.
+    let read_result: CfgResult;
+    if enc_type_i32 == cfgparser_encryption::EncryptionType::Xor as i32 {
+        let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+            cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+        read_result = read_self(decryptor);
+    } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Viginere as i32 {
+        let decryptor: cfgparser_encryption::viginere::engine::ViginereCipher =
+            match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
+                Ok(vc) => vc,
+                Err(_) => return std::ptr::null(),
+            };
+        read_result = read_self(decryptor);
+    } else {
+        read_result = Err("invalid encryption type".into());
+    }
+
     // read the Configuration from the current binary.
-    let configuration: models::core::Configuration = match read_self(key) {
+    let configuration: models::core::Configuration = match read_result {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };
@@ -177,11 +248,37 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 /// function designed to take in a filename and key, extract configuration
 /// information from the target and return a `<host>:<port>` string.
 ///
-/// this performs the same reading logic as "read_cfg" with the only difference
-/// being it is not reading from the current binary, but from a user-specified file.
+/// this calls `read_cfg_from_file_with_encryption` and specified XOR as
+/// the encryption type.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
 pub extern "C" fn read_cfg_from_file(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
+) -> *const std::ffi::c_char {
+    read_cfg_from_file_with_encryption(
+        raw_filename,
+        raw_key,
+        cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+    )
+}
+
+#[no_mangle]
+/// function designed to take in a filename and key, extract configuration
+/// information from the target and return a `<host>:<port>` string.
+///
+/// this performs the same reading logic as `read_cfg_with_encryption` with the only difference
+/// being it is not reading from the current binary, but from a user-specified file.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
+pub extern "C" fn read_cfg_from_file_with_encryption(
+    raw_filename: *const std::ffi::c_char,
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
 ) -> *const std::ffi::c_char {
     let filename: &str;
 
@@ -206,9 +303,36 @@ pub extern "C" fn read_cfg_from_file(
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
 
-    // read the Configuration from the target file.
-    let configuration: models::core::Configuration = match read_from_file(filename.to_string(), key)
-    {
+    // attempt to convert the user input into a rust i32 var.
+    //
+    // if this fails, NULL will be returned.
+    let enc_type_i32: i32 = match enc_type.try_into() {
+        Ok(int_val) => int_val,
+        Err(_) => return std::ptr::null(),
+    };
+
+    // create the decryptor based on the user's input. this will compare
+    // the int with the enum to determine what kind of decryptor to create.
+    //
+    // if an invalid int is passed in, or an error occurs, NULL will be returned.
+    let read_result: CfgResult;
+    if enc_type_i32 == cfgparser_encryption::EncryptionType::Xor as i32 {
+        let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+            cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+        read_result = read_from_file(filename.to_string(), decryptor);
+    } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Viginere as i32 {
+        let decryptor: cfgparser_encryption::viginere::engine::ViginereCipher =
+            match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
+                Ok(vc) => vc,
+                Err(_) => return std::ptr::null(),
+            };
+        read_result = read_from_file(filename.to_string(), decryptor);
+    } else {
+        read_result = Err("invalid encryption type".into());
+    }
+
+    // read the Configuration from the current binary.
+    let configuration: models::core::Configuration = match read_result {
         Ok(result) => result,
         Err(_) => return std::ptr::null(),
     };

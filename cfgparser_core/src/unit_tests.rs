@@ -21,12 +21,63 @@ fn test_read() -> TestResult {
     };
 
     let key: &str = "secret";
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
     let reader: extractor::core::TestExtractor = extractor::core::TestExtractor;
 
-    let extracted: models::core::Configuration = read(reader, key.as_bytes())?;
+    let extracted: models::core::Configuration = read(reader, decryptor)?;
 
     assert_eq!(extracted, expected);
     assert_ne!(extracted, unexpected);
+
+    Ok(())
+}
+
+#[test]
+/// test designed to confirm the "read()" function operates as
+/// expected and returns the proper result when a ViginereCipher
+/// decryptor is passed to it.
+fn test_read_viginere() -> TestResult {
+    let key: Vec<u8> = b"secretkey".to_vec();
+    let cipher1: cfgparser_encryption::viginere::engine::ViginereCipher =
+        match cfgparser_encryption::viginere::engine::ViginereCipher::new(key) {
+            Ok(c) => c,
+            Err(e) => return Err(e),
+        };
+    let expected: models::core::Configuration = models::core::Configuration::new(
+        "secrethost".to_string(),
+        1234,
+        models::core::SchemeType::HTTP,
+    );
+    let ciphertext: Vec<u8> = vec![
+        104, 101, 108, 108, 111, 32, 116, 104, 101, 114, 101, 32, 101, 118, 101, 114, 121, 98, 111,
+        100, 121, 119, 99, 76, 102, 102, 51, 71, 48, 83, 110, 109, 121, 77, 112, 69, 112, 82, 51,
+        84, 112, 98, 89, 108, 120, 116, 51, 85, 98, 86, 71, 89, 97, 103, 73, 57, 112, 104, 86, 83,
+        54, 77, 66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109,
+        77, 97, 69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72,
+    ];
+    let ciphertext2: Vec<u8> = vec![
+        119, 99, 76, 102, 102, 51, 71, 48, 83, 110, 109, 121, 77, 112, 69, 112, 82, 51, 84, 112,
+        98, 89, 108, 120, 116, 51, 85, 98, 86, 71, 89, 97, 103, 73, 57, 112, 104, 86, 83, 54, 77,
+        66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109, 77, 97,
+        69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72,
+    ];
+    let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(ciphertext);
+    let reader2: extractor::core::BytesExtractor =
+        extractor::core::BytesExtractor::new(ciphertext2);
+
+    let plaintext: models::core::Configuration = match read(reader, cipher1.clone()) {
+        Ok(result) => result,
+        Err(e) => return Err(e),
+    };
+
+    let plaintext2: models::core::Configuration = match read(reader2, cipher1) {
+        Ok(result) => result,
+        Err(e) => return Err(e),
+    };
+
+    assert_eq!(plaintext, expected);
+    assert_eq!(plaintext2, expected);
 
     Ok(())
 }
@@ -52,7 +103,9 @@ fn test_read_bytesextractor() -> TestResult {
     ]);
 
     let key: &str = "sabre";
-    let extracted: models::core::Configuration = read(reader, key.as_bytes())?;
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+    let extracted: models::core::Configuration = read(reader, decryptor)?;
 
     assert_eq!(extracted, expected);
 
@@ -77,8 +130,10 @@ fn test_read_from_vec() -> TestResult {
         scheme: models::core::SchemeType::HTTPS,
     };
     let key: &str = "sabre";
+    let decryptor: cfgparser_encryption::xor::engine::XORCipher =
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
 
-    let extracted: models::core::Configuration = read_from_vec(bytes_vec, key.as_bytes())?;
+    let extracted: models::core::Configuration = read_from_vec(bytes_vec, decryptor)?;
 
     assert_eq!(extracted, expected);
 

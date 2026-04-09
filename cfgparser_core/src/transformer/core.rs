@@ -23,11 +23,15 @@ pub fn deserialize_payload(
 ///
 /// 1. decrypt bytes
 /// 2. base64-decode plaintext
-pub fn transform_payload(key: &[u8], raw_payload: &[u8]) -> Result<Vec<u8>, base64::DecodeError> {
+pub fn transform_payload<D>(
+    decryptor: D,
+    raw_payload: &[u8],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>>
+where
+    D: cfgparser_encryption::Decryptor,
+{
     // XOR decrypt the raw_payload bytes.
-    let plaintext: Vec<u8> =
-        cfgparser_encryption::xor::engine::encrypt_decrypt(key.to_vec(), raw_payload.to_vec());
-
+    let plaintext: Vec<u8> = decryptor.decrypt(raw_payload.to_vec())?;
     // base64-decode the payload and save the result
-    base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)
+    Ok(base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)?)
 }

@@ -13,6 +13,12 @@ const UPPER_Z: u8 = b'Z' + 1;
 /// lower or visa versa.
 const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
+/// struct designed to implement encrypt and decrypt for a Viginere cipher.
+pub struct ViginereCipher {
+    pub key: Vec<u8>,
+}
+
 /// function designed to take in a key and determine whether it
 /// is a valid caesar/viginere cipher key.
 pub fn is_valid_key(key: Vec<u8>) -> bool {
@@ -29,71 +35,84 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
     !key.into_iter().any(|letter| !is_letter(letter))
 }
 
-/// function designed to implement a viginere cipher.
-///
-/// this will take in plaintext and a key and rotate each letter
-/// in the plaintext using the associated key character.
-pub fn decrypt(ciphertext: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    // let mut plaintext: Vec<u8> = vec![];
-    let mut key_pos: usize = 0;
-    let len_key = key.len();
-    let rev: bool = true;
-
-    if !is_valid_key(key.clone()) {
-        return Err("invalid key passed in".into());
+impl ViginereCipher {
+    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+        if key.len() < 1 {
+            return Err("key must be of non-zero length".into());
+        }
+        Ok(ViginereCipher { key })
     }
-
-    // go through each letter in the ciphertext and rotate it
-    // by the inverse key value to convert it back to the
-    // original plaintext value and generate the final plaintext vector.
-    let plaintext: Vec<u8> = ciphertext
-        .iter()
-        .enumerate()
-        .map(|(_, &current)| {
-            let new: u8 = rotate(current, key[key_pos % len_key], rev);
-
-            if is_letter(current) {
-                key_pos += 1;
-            }
-
-            return new;
-        })
-        .collect();
-
-    return Ok(plaintext);
 }
 
-/// function designed to implement a viginere cipher.
-///
-/// this will take in plaintext and a key and rotate each letter
-/// in the plaintext using the associated key character.
-pub fn encrypt(plaintext: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let mut key_pos: usize = 0;
-    let len_key = key.len();
-    let rev: bool = false;
+impl crate::Decryptor for ViginereCipher {
+    /// function designed to implement a viginere cipher.
+    ///
+    /// this will take in plaintext and a key and rotate each letter
+    /// in the plaintext using the associated key character.
+    fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        // let mut plaintext: Vec<u8> = vec![];
+        let mut key_pos: usize = 0;
+        let len_key = self.key.len();
+        let rev: bool = true;
 
-    if !is_valid_key(key.clone()) {
-        return Err("invalid key passed in".into());
+        if !is_valid_key(self.key.clone()) {
+            return Err("invalid key passed in".into());
+        }
+
+        // go through each letter in the ciphertext and rotate it
+        // by the inverse key value to convert it back to the
+        // original plaintext value and generate the final plaintext vector.
+        let plaintext: Vec<u8> = ciphertext
+            .iter()
+            .enumerate()
+            .map(|(_, &current)| {
+                let new: u8 = rotate(current, self.key[key_pos % len_key], rev);
+
+                if is_letter(current) {
+                    key_pos += 1;
+                }
+
+                return new;
+            })
+            .collect();
+
+        return Ok(plaintext);
     }
+}
 
-    // go through each letter in the plaintext and rotate it
-    // by the corresponding key value to generate the final
-    // ciphertext vector.
-    let ciphertext: Vec<u8> = plaintext
-        .iter()
-        .enumerate()
-        .map(|(_, &current)| {
-            let new = rotate(current, key[key_pos % len_key], rev);
+impl crate::Encryptor for ViginereCipher {
+    /// function designed to implement a viginere cipher.
+    ///
+    /// this will take in plaintext and a key and rotate each letter
+    /// in the plaintext using the associated key character.
+    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let mut key_pos: usize = 0;
+        let len_key = self.key.len();
+        let rev: bool = false;
 
-            if is_letter(current) {
-                key_pos += 1;
-            }
+        if !is_valid_key(self.key.clone()) {
+            return Err("invalid key passed in".into());
+        }
 
-            return new;
-        })
-        .collect();
+        // go through each letter in the plaintext and rotate it
+        // by the corresponding key value to generate the final
+        // ciphertext vector.
+        let ciphertext: Vec<u8> = plaintext
+            .iter()
+            .enumerate()
+            .map(|(_, &current)| {
+                let new = rotate(current, self.key[key_pos % len_key], rev);
 
-    return Ok(ciphertext);
+                if is_letter(current) {
+                    key_pos += 1;
+                }
+
+                return new;
+            })
+            .collect();
+
+        return Ok(ciphertext);
+    }
 }
 
 /// function designed to adjust a key's case based on the

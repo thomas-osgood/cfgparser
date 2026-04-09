@@ -1,4 +1,5 @@
 use super::*;
+use crate::{Decryptor, Encryptor};
 
 #[test]
 /// test designed to make sure the decrypt function works as expected.
@@ -6,7 +7,7 @@ use super::*;
 /// the decrypt function uses multiple helper functions to carry out
 /// its logic. this serves as a test of the logic and as a test to confirm
 /// all functions call the others correctly.
-fn test_decrypt() {
+fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
     let key: Vec<u8> = "there".into();
     let ciphertext: Vec<u8> = "alpcs xciicuvhp".into();
     let ciphertext2: Vec<u8> = "Alpcs xciicuvhp".into();
@@ -14,11 +15,15 @@ fn test_decrypt() {
     let expected: Vec<u8> = "hello everybody".into();
     let expected2: Vec<u8> = "Hello everybody".into();
 
-    let result: Vec<u8> = decrypt(ciphertext, key.clone()).unwrap();
-    let result2: Vec<u8> = decrypt(ciphertext2, key).unwrap();
+    let cipher: ViginereCipher = ViginereCipher::new(key)?;
+
+    let result: Vec<u8> = cipher.decrypt(ciphertext).unwrap();
+    let result2: Vec<u8> = cipher.decrypt(ciphertext2).unwrap();
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected2);
+
+    Ok(())
 }
 
 #[test]
@@ -28,7 +33,7 @@ fn test_decrypt() {
 /// the encrypt function uses multiple helper functions to carry out
 /// its logic. this serves as a test of the logic and as a test to confirm
 /// all functions call the others correctly.
-fn test_encrypt() {
+fn test_encrypt() -> Result<(), Box<dyn std::error::Error>> {
     let key: Vec<u8> = "there".into();
     let plaintext: Vec<u8> = "hello everybody".into();
     let plaintext2: Vec<u8> = "Hello everybody".into();
@@ -36,11 +41,15 @@ fn test_encrypt() {
     let expected: Vec<u8> = "alpcs xciicuvhp".into();
     let expected2: Vec<u8> = "Alpcs xciicuvhp".into();
 
-    let result: Vec<u8> = encrypt(plaintext, key.clone()).unwrap();
-    let result2: Vec<u8> = encrypt(plaintext2, key).unwrap();
+    let cipher: ViginereCipher = ViginereCipher::new(key)?;
+
+    let result: Vec<u8> = cipher.encrypt(plaintext).unwrap();
+    let result2: Vec<u8> = cipher.encrypt(plaintext2).unwrap();
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected2);
+
+    Ok(())
 }
 
 #[test]
