@@ -1,7 +1,4 @@
-use aes_gcm::{
-    aead::{Aead, KeyInit},
-    Aes256Gcm, Key, Nonce,
-};
+use aes_gcm::aead::{Aead, KeyInit};
 
 #[derive(Debug)]
 pub enum AESError {
@@ -45,12 +42,12 @@ impl crate::Decryptor for AESCipher {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
 
-        // split the encrypted data into nonce and ciphertext. this
+        // split the encrypted data into nonce and cipherbytes. this
         // will extract the nonce that will be used to decrypt the data
-        // and the ciphertext that will be decrypted.
+        // and the cipherbytes that will be decrypted.
         //
         // bytes 0 -> 11: nonce
-        // bytes 12 -> n: ciphertext
+        // bytes 12 -> n: cipherbytes
         let (nonce_arr, cipherbytes) = ciphertext.split_at(12);
 
         // rebuild the nonce using the bytes extracted from the
