@@ -25,8 +25,6 @@ fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
 
     let plaintext: Vec<u8> = cipher.decrypt(ciphertext)?;
 
-    println!("Plaintext: {:?}", plaintext);
-
     assert_eq!(plaintext, expected);
 
     Ok(())
