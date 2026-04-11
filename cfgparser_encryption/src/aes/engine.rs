@@ -1,9 +1,13 @@
+use aes_gcm::KeyInit;
+
 #[derive(Debug)]
 pub enum AESError {
     KeyLength(String),
 }
 
 const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
+const ERR_128: &str = "AES-128 is not currently supported";
+const ERR_192: &str = "AES-192 is not currently supported";
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AESCipher {
@@ -19,12 +23,26 @@ fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
         return Err(AESError::KeyLength(ERR_KEY_LEN.to_string()));
     }
 
-    Ok(())
+    match key_size {
+        16 => Err(AESError::KeyLength(ERR_128.to_string())),
+        24 => Err(AESError::KeyLength(ERR_192.to_string())),
+        _ => Ok(()),
+    }
 }
 
 impl AESCipher {
     pub fn new(key: Vec<u8>) -> Result<AESCipher, AESError> {
         validate_key(key.clone())?;
         Ok(AESCipher { key })
+    }
+}
+
+impl crate::Decryptor for AESCipher {
+    fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
+            aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
+        let cipher: aes_gcm::Aes256Gcm = aes_gcm::Aes256Gcm::new(key);
+
+        Ok(vec![])
     }
 }
