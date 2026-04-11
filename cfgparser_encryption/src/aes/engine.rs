@@ -17,6 +17,9 @@ const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
 const ERR_128: &str = "AES-128 is not currently supported";
 const ERR_192: &str = "AES-192 is not currently supported";
 
+/// expected size of the nonce when decrypting.
+pub const NONCE_SIZE: usize = 12;
+
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AESCipher {
     key: Vec<u8>,
@@ -56,7 +59,7 @@ impl crate::Decryptor for AESCipher {
         //
         // bytes 0 -> 11: nonce
         // bytes 12 -> n: cipherbytes
-        let (nonce_arr, cipherbytes) = ciphertext.split_at(12);
+        let (nonce_arr, cipherbytes) = ciphertext.split_at(NONCE_SIZE);
 
         // rebuild the nonce using the bytes extracted from the
         // encrypted data above.
