@@ -3,7 +3,7 @@ use aes_gcm::aead::{Aead, AeadCore, KeyInit};
 #[cfg(test)]
 mod unit_tests;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AESError {
     KeyLength(String),
 }
