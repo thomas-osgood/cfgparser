@@ -1,6 +1,9 @@
 use aes_gcm::aead::{Aead, AeadCore, KeyInit};
 
-#[derive(Debug)]
+#[cfg(test)]
+mod unit_tests;
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum AESError {
     KeyLength(String),
 }
