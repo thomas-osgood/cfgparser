@@ -3,6 +3,8 @@ use crate::Decryptor;
 use super::*;
 
 #[test]
+/// test designed to confirm the decrypt functionality of the
+/// AESCipher is working as expected.
 fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
     let ciphertext: Vec<u8> = vec![
         66, 168, 189, 189, 234, 64, 241, 80, 19, 32, 71, 136, 110, 231, 230, 187, 172, 117, 86,
