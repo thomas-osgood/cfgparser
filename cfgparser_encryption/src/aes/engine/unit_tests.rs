@@ -60,7 +60,10 @@ fn test_encrypt() -> Result<(), Box<dyn std::error::Error>> {
 /// test designed to confirm the key validation logic works
 /// as expected.
 fn test_validate_key() -> Result<(), AESError> {
-    let test_key_1: Vec<u8> = b"this is an invalid key".to_vec();
+    let test_key_1: Vec<u8> = vec![
+        116, 104, 105, 115, 32, 105, 115, 32, 97, 110, 32, 105, 110, 118, 97, 108, 105, 100, 32,
+        107, 101, 121,
+    ];
     let test_key_2: Vec<u8> = vec![
         57, 72, 60, 6, 7, 247, 134, 240, 254, 56, 39, 120, 58, 56, 12, 209, 39, 26, 66, 154, 78,
         38, 106, 196, 105, 68, 79, 66, 220, 128, 101, 177,
