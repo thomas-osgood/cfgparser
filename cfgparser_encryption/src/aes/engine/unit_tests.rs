@@ -1,4 +1,4 @@
-use crate::Decryptor;
+use crate::{Decryptor, Encryptor};
 
 use super::*;
 
@@ -26,6 +26,32 @@ fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
     let plaintext: Vec<u8> = cipher.decrypt(ciphertext)?;
 
     assert_eq!(plaintext, expected);
+
+    Ok(())
+}
+
+#[test]
+/// test designed to confirm the encrypt functionality of the
+/// AESCipher is working as expected.
+///
+/// because the nonce is randomly generate each time, the test
+/// is conducted by encrypting a known string and confirming
+/// the decrypted result of the `encrypt()` function resolved to
+/// the original plaintext.
+fn test_encrypt() -> Result<(), Box<dyn std::error::Error>> {
+    let key: Vec<u8> = vec![
+        57, 72, 60, 6, 7, 247, 134, 240, 254, 56, 39, 120, 58, 56, 12, 209, 39, 26, 66, 154, 78,
+        38, 106, 196, 105, 68, 79, 66, 220, 128, 101, 177,
+    ];
+    let cipher: AESCipher = match AESCipher::new(key) {
+        Ok(c) => c,
+        Err(e) => return Err(e.to_string().into()),
+    };
+    let plaintext: Vec<u8> = b"this is a secret".to_vec();
+
+    let result: Vec<u8> = cipher.decrypt(cipher.encrypt(plaintext.clone())?)?;
+
+    assert_eq!(result, plaintext);
 
     Ok(())
 }
