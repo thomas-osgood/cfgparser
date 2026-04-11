@@ -1,4 +1,4 @@
-use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::aead::{Aead, AeadCore, KeyInit};
 
 #[derive(Debug)]
 pub enum AESError {
@@ -58,6 +58,32 @@ impl crate::Decryptor for AESCipher {
 
         match aescipher.decrypt(nonce, cipherbytes) {
             Ok(plaintext) => Ok(plaintext),
+            Err(e) => Err(e.to_string().into()),
+        }
+    }
+}
+
+impl crate::Encryptor for AESCipher {
+    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
+            aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
+
+        // generate a random, 12 byte nonce to use during encryption.
+        let nonce = aes_gcm::Aes256Gcm::generate_nonce(&mut aes_gcm::aead::OsRng);
+
+        // create a new AES cipher object using the encryption key.
+        let aescipher = aes_gcm::Aes256Gcm::new(key);
+
+        match aescipher.encrypt(&nonce, &plaintext[..]) {
+            Ok(enc_result) => {
+                // return a slice with the first 12 bytes being the
+                // nonce and the remaining bytes being the encrypted
+                // message. this allows the receiver to extract the
+                // nonce from the message during decryption.
+                let mut ciphertext: Vec<u8> = nonce.to_vec();
+                ciphertext.extend_from_slice(&enc_result);
+                Ok(ciphertext)
+            }
             Err(e) => Err(e.to_string().into()),
         }
     }
