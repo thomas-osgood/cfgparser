@@ -7,7 +7,6 @@ edition = "2021"
 crate-type = ["lib"]
 
 [features]
-default = ["aes"]
 aes = []
 
 [dependencies]
