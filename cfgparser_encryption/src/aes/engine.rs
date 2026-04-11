@@ -1,4 +1,7 @@
-use aes_gcm::KeyInit;
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    Aes256Gcm, Key, Nonce,
+};
 
 #[derive(Debug)]
 pub enum AESError {
@@ -41,8 +44,24 @@ impl crate::Decryptor for AESCipher {
     fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
-        let cipher: aes_gcm::Aes256Gcm = aes_gcm::Aes256Gcm::new(key);
 
-        Ok(vec![])
+        // split the encrypted data into nonce and ciphertext. this
+        // will extract the nonce that will be used to decrypt the data
+        // and the ciphertext that will be decrypted.
+        //
+        // bytes 0 -> 11: nonce
+        // bytes 12 -> n: ciphertext
+        let (nonce_arr, cipherbytes) = ciphertext.split_at(12);
+
+        // rebuild the nonce using the bytes extracted from the
+        // encrypted data above.
+        let nonce = aes_gcm::Nonce::from_slice(nonce_arr);
+
+        let aescipher = aes_gcm::Aes256Gcm::new(key);
+
+        match aescipher.decrypt(nonce, cipherbytes) {
+            Ok(plaintext) => Ok(plaintext),
+            Err(e) => Err(e.to_string().into()),
+        }
     }
 }
