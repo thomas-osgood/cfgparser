@@ -15,6 +15,7 @@ pub enum EncryptionType {
     #[default]
     Xor,
     Viginere,
+    Aes,
 }
 
 /// generic trait designed to describe a structure that can decrypt
