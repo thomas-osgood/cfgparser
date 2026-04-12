@@ -6,4 +6,8 @@ edition = "2021"
 [lib]
 crate-type = ["lib"]
 
+[features]
+aes = []
+
 [dependencies]
+aes-gcm = "0.10.3"

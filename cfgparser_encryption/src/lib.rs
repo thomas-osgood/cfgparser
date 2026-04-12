@@ -3,6 +3,8 @@
 //! this is designed to be used by cfgparser_core for its main functionality
 //! and obfuscation.
 
+#[cfg(feature = "aes")]
+pub mod aes;
 pub mod viginere;
 pub mod xor;
 
@@ -13,6 +15,7 @@ pub enum EncryptionType {
     #[default]
     Xor,
     Viginere,
+    Aes,
 }
 
 /// generic trait designed to describe a structure that can decrypt
