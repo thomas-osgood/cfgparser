@@ -6,6 +6,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "staticlib", "lib"]
 
+[features]
+default = ["cfgparser_encryption/aes"]
+
 [dependencies]
 base64 = "0.22.1"
 cfgparser_encryption = { path = "../cfgparser_encryption" }
