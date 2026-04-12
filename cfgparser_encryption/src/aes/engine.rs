@@ -49,6 +49,14 @@ impl AESCipher {
         validate_key(key.clone())?;
         Ok(AESCipher { key })
     }
+
+    /// function designed to update the key used for encryption
+    /// and decryption by the AESCipher.
+    pub fn update_key(&mut self, key: Vec<u8>) -> Result<(), AESError> {
+        validate_key(key.clone())?;
+        self.key = key;
+        Ok(())
+    }
 }
 
 impl crate::Decryptor for AESCipher {
