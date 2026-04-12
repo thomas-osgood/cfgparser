@@ -327,6 +327,13 @@ pub extern "C" fn read_cfg_from_file_with_encryption(
                 Err(_) => return std::ptr::null(),
             };
         read_result = read_from_file(filename.to_string(), decryptor);
+    } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Aes as i32 {
+        let decryptor: cfgparser_encryption::aes::engine::AESCipher =
+            match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
+                Ok(aesc) => aesc,
+                Err(_) => return std::ptr::null(),
+            };
+        read_result = read_from_file(filename.to_string(), decryptor);
     } else {
         read_result = Err("invalid encryption type".into());
     }
