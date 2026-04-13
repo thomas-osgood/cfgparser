@@ -1,6 +1,10 @@
 #ifndef __CFGPARSER_H
 #define __CFGPARSER_H
 
+#define ENCTYPE_XOR 0
+#define ENCTYPE_VIGINERE 1
+#define ENCTYPE_AES 2
+
 /*
 function designed to read the end of the current binary and
 extract configuration information from it. this will return
