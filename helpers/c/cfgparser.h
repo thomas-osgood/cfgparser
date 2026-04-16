@@ -43,7 +43,7 @@ extern "C"
 
     the type of encryption is specified by the "enc_type" argument.
     */
-    extern char *read_cfg_with_encryption(char *key, int enc_type);
+    extern char *read_cfg_with_encryption(char *key, EncyptionType enc_type);
 
     /*
     function designed to read the end of a target file and
@@ -72,7 +72,7 @@ extern "C"
 
     the type of encryption is specified by the "enc_type" argument.
     */
-    extern char *read_cfg_from_file_with_encryption(char *filename, char *key, int enc_type);
+    extern char *read_cfg_from_file_with_encryption(char *filename, char *key, EncyptionType enc_type);
 
     /*
     function designed to free memory that was originally allocated
