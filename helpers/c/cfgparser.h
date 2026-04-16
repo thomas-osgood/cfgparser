@@ -2,7 +2,7 @@
 #define __CFGPARSER_H
 
 /*
-enum mimicing the EncType enum defined in the rust module.
+enum mimicing the EncryptionType enum defined in the rust module.
 */
 enum EncyptionType
 {
