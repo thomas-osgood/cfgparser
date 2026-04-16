@@ -1,9 +1,15 @@
 #ifndef __CFGPARSER_H
 #define __CFGPARSER_H
 
-#define ENCTYPE_XOR 0
-#define ENCTYPE_VIGINERE 1
-#define ENCTYPE_AES 2
+/*
+enum mimicing the EncType enum defined in the rust module.
+*/
+enum EncyptionType
+{
+    Xor,
+    Viginere,
+    Aes,
+};
 
 #ifdef __cplusplus
 extern "C"
