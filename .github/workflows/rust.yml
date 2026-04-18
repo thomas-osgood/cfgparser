@@ -22,7 +22,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cfgparser-so-${{ github.ref_name }}
-          path: target/release/libcfgparser_core.so
+          path: |
+            helpers/c/cfgparser.h
+            helpers/c/install.sh
+            target/release/libcfgparser_core.so
 
   build_windows:
     runs-on: windows-latest
