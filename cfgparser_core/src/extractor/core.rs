@@ -17,11 +17,11 @@ pub trait CfgExtractor {
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
 /// either a Vec<u8> or an error.
-fn read_bytes<R>(mut reader: R) -> std::io::Result<Vec<u8>>
+fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
-    let size_start: i64 = SZ_SIZEBUFF as i64 * -1;
+    let size_start: i64 = (offset + SZ_SIZEBUFF) as i64 * -1;
 
     // allocate buffer that will hold the size bytes.
     let mut buf_sz: [u8; SZ_SIZEBUFF as usize] = [0; SZ_SIZEBUFF];
@@ -59,7 +59,7 @@ impl CfgExtractor for SelfExtractor {
         let current_binary: std::path::PathBuf = std::env::current_exe()?;
         let fptr: std::fs::File = std::fs::File::open(current_binary)?;
         // read and return the  bytes from the file.
-        read_bytes(fptr)
+        read_bytes(fptr, 0)
     }
 }
 
@@ -79,7 +79,7 @@ impl FileExtractor {
 impl CfgExtractor for FileExtractor {
     fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
         let fptr: std::fs::File = std::fs::File::open(&self.filename)?;
-        read_bytes(fptr)
+        read_bytes(fptr, 0)
     }
 }
 
@@ -111,7 +111,7 @@ impl BytesExtractor {
 impl CfgExtractor for BytesExtractor {
     fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
         let stream: std::io::Cursor<&Vec<u8>> = std::io::Cursor::new(&self.stream);
-        read_bytes(stream)
+        read_bytes(stream, 0)
     }
 }
 
