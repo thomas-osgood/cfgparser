@@ -29,7 +29,7 @@ fn test_read_bytes() -> Result<(), Box<dyn std::error::Error>> {
         59, 83, 58, 34, 40, 29, 1, 59, 51, 21, 17, 28, 57, 88, 0, 0, 0, 0, 0, 0, 0, 72,
     ]);
 
-    let result: Vec<u8> = read_bytes(test_cur)?;
+    let result: Vec<u8> = read_bytes(test_cur, 0)?;
     let result2: Vec<u8> = test_vec.extract_cfg_bytes()?;
 
     assert_eq!(result, expected);
