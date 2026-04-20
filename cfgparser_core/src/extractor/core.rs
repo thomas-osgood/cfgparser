@@ -1,6 +1,12 @@
 #[cfg(test)]
 mod unit_tests;
 
+/// constant representing a value of no offset.
+///
+/// this will inidicate to read from the end of
+/// the file/stream/etc.
+pub const OFFSET_NONE: usize = 0;
+
 /// constant size of the byte buffer that will be used
 /// to hold the bytes representing the size of the
 /// configuration array.
@@ -11,7 +17,7 @@ const SZ_SIZEBUFF: usize = 8;
 ///
 /// the main implementation of this is in SelfExtractor.
 pub trait CfgExtractor {
-    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>>;
+    fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>>;
 }
 
 /// generic function designed to read the configuration bytes from
@@ -55,11 +61,11 @@ pub struct SelfExtractor;
 impl CfgExtractor for SelfExtractor {
     /// function designed to extract the configuration
     /// bytes from the current binary.
-    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+    fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
         let current_binary: std::path::PathBuf = std::env::current_exe()?;
         let fptr: std::fs::File = std::fs::File::open(current_binary)?;
         // read and return the  bytes from the file.
-        read_bytes(fptr, 0)
+        read_bytes(fptr, offset)
     }
 }
 
@@ -77,9 +83,9 @@ impl FileExtractor {
 }
 
 impl CfgExtractor for FileExtractor {
-    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+    fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
         let fptr: std::fs::File = std::fs::File::open(&self.filename)?;
-        read_bytes(fptr, 0)
+        read_bytes(fptr, offset)
     }
 }
 
@@ -109,9 +115,9 @@ impl BytesExtractor {
 }
 
 impl CfgExtractor for BytesExtractor {
-    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+    fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
         let stream: std::io::Cursor<&Vec<u8>> = std::io::Cursor::new(&self.stream);
-        read_bytes(stream, 0)
+        read_bytes(stream, offset)
     }
 }
 
@@ -129,7 +135,7 @@ impl CfgExtractor for TestExtractor {
     ///
     /// config: {"host": "secrethost", "port": 8000}
     /// key: "secret"
-    fn extract_cfg_bytes(&self) -> std::io::Result<Vec<u8>> {
+    fn extract_cfg_bytes(&self, _offset: usize) -> std::io::Result<Vec<u8>> {
         Ok(vec![
             22, 28, 41, 29, 7, 71, 61, 85, 42, 24, 10, 19, 58, 11, 45, 30, 60, 71, 57, 9, 7, 53,
             13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
