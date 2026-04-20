@@ -45,7 +45,7 @@ where
 
     // calculate how far back to go from the end of the file
     // to reach the beginning byte of the config.
-    let cfg_offset: i64 = (8 + sz_payload) * -1;
+    let cfg_offset: i64 = (8 + sz_payload + offset as i64) * -1;
 
     // jump to the start of the config.
     reader.seek(std::io::SeekFrom::End(cfg_offset))?;
