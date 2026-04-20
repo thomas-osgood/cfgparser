@@ -23,6 +23,10 @@ pub trait CfgExtractor {
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
 /// either a Vec<u8> or an error.
+///
+/// note: the `offset` is the offset from the end of the `reader` where
+/// the *end* of the size block is. to calculate the beginning of the
+/// size block, this function will add `SZ_SIZEBUFF` to the offset.
 fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
