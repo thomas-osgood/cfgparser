@@ -30,7 +30,7 @@ fn test_read_bytes() -> Result<(), Box<dyn std::error::Error>> {
     ]);
 
     let result: Vec<u8> = read_bytes(test_cur, 0)?;
-    let result2: Vec<u8> = test_vec.extract_cfg_bytes()?;
+    let result2: Vec<u8> = test_vec.extract_cfg_bytes(OFFSET_NONE)?;
 
     assert_eq!(result, expected);
     assert_eq!(result2, expected);
@@ -88,7 +88,7 @@ fn test_bytesextractor_set_stream() -> Result<(), Box<dyn std::error::Error>> {
     ];
 
     extractor.set_stream(stream);
-    let result: Vec<u8> = extractor.extract_cfg_bytes()?;
+    let result: Vec<u8> = extractor.extract_cfg_bytes(OFFSET_NONE)?;
     assert_eq!(result, expected);
 
     Ok(())
