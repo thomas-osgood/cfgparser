@@ -125,7 +125,7 @@ where
     D: cfgparser_encryption::Decryptor,
 {
     // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes()?;
+    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes(0)?;
 
     // decrypt and base64 decode the bytes extracted in the previous
     // step to get a string representation of the JSON structure holding
