@@ -25,7 +25,8 @@ fn test_read() -> TestResult {
         cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
     let reader: extractor::core::TestExtractor = extractor::core::TestExtractor;
 
-    let extracted: models::core::Configuration = read(reader, decryptor)?;
+    let extracted: models::core::Configuration =
+        read(reader, decryptor, extractor::core::OFFSET_NONE)?;
 
     assert_eq!(extracted, expected);
     assert_ne!(extracted, unexpected);
@@ -66,15 +67,17 @@ fn test_read_viginere() -> TestResult {
     let reader2: extractor::core::BytesExtractor =
         extractor::core::BytesExtractor::new(ciphertext2);
 
-    let plaintext: models::core::Configuration = match read(reader, cipher1.clone()) {
-        Ok(result) => result,
-        Err(e) => return Err(e),
-    };
+    let plaintext: models::core::Configuration =
+        match read(reader, cipher1.clone(), extractor::core::OFFSET_NONE) {
+            Ok(result) => result,
+            Err(e) => return Err(e),
+        };
 
-    let plaintext2: models::core::Configuration = match read(reader2, cipher1) {
-        Ok(result) => result,
-        Err(e) => return Err(e),
-    };
+    let plaintext2: models::core::Configuration =
+        match read(reader2, cipher1, extractor::core::OFFSET_NONE) {
+            Ok(result) => result,
+            Err(e) => return Err(e),
+        };
 
     assert_eq!(plaintext, expected);
     assert_eq!(plaintext2, expected);
@@ -105,7 +108,8 @@ fn test_read_bytesextractor() -> TestResult {
     let key: &str = "sabre";
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
         cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
-    let extracted: models::core::Configuration = read(reader, decryptor)?;
+    let extracted: models::core::Configuration =
+        read(reader, decryptor, extractor::core::OFFSET_NONE)?;
 
     assert_eq!(extracted, expected);
 

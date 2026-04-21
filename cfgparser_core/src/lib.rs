@@ -119,13 +119,13 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
 /// is what should be passed in as the `reader`. this struct implements
 /// logic that will read the configuration bytes from the end of
 /// the current binary.
-pub fn read<T, D>(reader: T, decryptor: D) -> CfgResult
+pub fn read<T, D>(reader: T, decryptor: D, offset: usize) -> CfgResult
 where
     T: extractor::core::CfgExtractor,
     D: cfgparser_encryption::Decryptor,
 {
     // read configuration bytes from current binary.
-    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes(0)?;
+    let cfg_bytes: Vec<u8> = reader.extract_cfg_bytes(offset)?;
 
     // decrypt and base64 decode the bytes extracted in the previous
     // step to get a string representation of the JSON structure holding
@@ -145,7 +145,7 @@ where
     D: cfgparser_encryption::Decryptor,
 {
     let reader: extractor::core::SelfExtractor = extractor::core::SelfExtractor {};
-    read(reader, decryptor)
+    read(reader, decryptor, extractor::core::OFFSET_NONE)
 }
 
 /// ease-of-use function designed to call read() with a FileExtractor
@@ -155,7 +155,7 @@ where
     D: cfgparser_encryption::Decryptor,
 {
     let reader: extractor::core::FileExtractor = extractor::core::FileExtractor::new(filename);
-    read(reader, decryptor)
+    read(reader, decryptor, extractor::core::OFFSET_NONE)
 }
 
 /// ease-of-use function designed to call read() with a BytesExtractor
@@ -165,7 +165,7 @@ where
     D: cfgparser_encryption::Decryptor,
 {
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(stream);
-    read(reader, decryptor)
+    read(reader, decryptor, extractor::core::OFFSET_NONE)
 }
 
 #[no_mangle]
