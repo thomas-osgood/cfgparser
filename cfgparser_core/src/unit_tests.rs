@@ -137,7 +137,8 @@ fn test_read_from_vec() -> TestResult {
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
         cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
 
-    let extracted: models::core::Configuration = read_from_vec(bytes_vec, decryptor)?;
+    let extracted: models::core::Configuration =
+        read_from_vec(bytes_vec, decryptor, extractor::core::OFFSET_NONE)?;
 
     assert_eq!(extracted, expected);
 
