@@ -93,24 +93,30 @@ fn test_read_viginere() -> TestResult {
         66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109, 77, 97,
         69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72,
     ];
+    let ciphertext3: Vec<u8> = vec![
+        119, 99, 76, 102, 102, 51, 71, 48, 83, 110, 109, 121, 77, 112, 69, 112, 82, 51, 84, 112,
+        98, 89, 108, 120, 116, 51, 85, 98, 86, 71, 89, 97, 103, 73, 57, 112, 104, 86, 83, 54, 77,
+        66, 87, 99, 79, 113, 85, 108, 83, 71, 72, 114, 67, 50, 106, 99, 102, 80, 69, 109, 77, 97,
+        69, 107, 114, 76, 75, 48, 109, 71, 72, 57, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0,
+    ];
     let reader: extractor::core::BytesExtractor = extractor::core::BytesExtractor::new(ciphertext);
     let reader2: extractor::core::BytesExtractor =
         extractor::core::BytesExtractor::new(ciphertext2);
+    let reader3: extractor::core::BytesExtractor =
+        extractor::core::BytesExtractor::new(ciphertext3);
 
     let plaintext: models::core::Configuration =
-        match read(reader, cipher1.clone(), extractor::core::OFFSET_NONE) {
-            Ok(result) => result,
-            Err(e) => return Err(e),
-        };
+        read(reader, cipher1.clone(), extractor::core::OFFSET_NONE)?;
 
     let plaintext2: models::core::Configuration =
-        match read(reader2, cipher1, extractor::core::OFFSET_NONE) {
-            Ok(result) => result,
-            Err(e) => return Err(e),
-        };
+        read(reader2, cipher1.clone(), extractor::core::OFFSET_NONE)?;
+
+    let plaintext3: models::core::Configuration = read(reader3, cipher1, 10)?;
 
     assert_eq!(plaintext, expected);
     assert_eq!(plaintext2, expected);
+    assert_eq!(plaintext3, expected);
 
     Ok(())
 }
