@@ -71,10 +71,7 @@ fn test_read_offset() -> TestResult {
 fn test_read_viginere() -> TestResult {
     let key: Vec<u8> = b"secretkey".to_vec();
     let cipher1: cfgparser_encryption::viginere::engine::ViginereCipher =
-        match cfgparser_encryption::viginere::engine::ViginereCipher::new(key) {
-            Ok(c) => c,
-            Err(e) => return Err(e),
-        };
+        cfgparser_encryption::viginere::engine::ViginereCipher::new(key)?;
     let expected: models::core::Configuration = models::core::Configuration::new(
         "secrethost".to_string(),
         1234,
