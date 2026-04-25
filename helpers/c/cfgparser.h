@@ -46,6 +46,23 @@ extern "C"
     extern char *read_cfg_with_encryption(char *key, int enc_type);
 
     /*
+    function designed to read the end of the current binary and
+    extract configuration information from it. this will return
+    the C2 address in the form "<scheme>://<ip>:<port>".
+
+    the extracted bytes are decrypted and base64-decoded before
+    being JSON deserialized into a configuration struct. the information
+    in this struct is then used to build the string that gets
+    returned by the function.
+
+    the type of encryption is specified by the "enc_type" argument.
+
+    the offset argument specifies how far back fron the end of the file
+    the last byte of the size block will be found.
+    */
+    extern char *read_cfg_with_encryption_o(char *key, int enc_type, unsigned int offset);
+
+    /*
     function designed to read the end of a target file and
     extract configuration information from it. this will return
     the C2 address in the form "<scheme>://<ip>:<port>".
