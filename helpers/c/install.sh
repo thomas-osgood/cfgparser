@@ -4,20 +4,20 @@
 # onto a linux machine and should be run as sudo or with
 # elevated permissions.
 
-BINARY_DIR=/usr/local/bin
+LIB_DIR=/usr/local/lib
 HEADER_DIR=/usr/local/include
 
 BINARY_FILE=./cfgparser.so
 HEADER_FILE=./cfgparser.h
 
 # step 1: copy the binary file to /usr/local/bin
-cp $BINARY_FILE $BINARY_DIR
+cp $BINARY_FILE $LIB_DIR
 LASTEXITCODE=$?
 if [[ $LASTEXITCODE -ne 0 ]]; then
-    echo "[-] unable to copy shared object to $BINARY_DIR. exit code: $LASTEXITCODE" >&2
+    echo "[-] unable to copy shared object to $LIB_DIR. exit code: $LASTEXITCODE" >&2
     exit $LASTEXITCODE
 fi
-echo "[+] $BINARYFILE successfully copied to $BINARY_DIR"
+echo "[+] $BINARYFILE successfully copied to $LIB_DIR"
 
 # step 2: copy the header file to /usr/local/include
 cp $HEADER_FILE $HEADER_DIR
