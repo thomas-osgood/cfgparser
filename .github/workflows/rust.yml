@@ -18,14 +18,20 @@ jobs:
         run: cargo build --release
       - name: Run tests
         run: cargo test
+      - name: Make Artifacts Dir
+        run: |
+          mkdir build
+          cp helpers/c/cfgparser.h build/cfgparser.h
+          cp helpers/c/install.sh build/install.sh
+          mv target/release/libcfgparser_core.so build/libcfgparser_core.so
       - name: Upload Shared Object
         uses: actions/upload-artifact@v4
         with:
           name: cfgparser-so-${{ github.ref_name }}
           path: |
-            helpers/c/cfgparser.h
-            helpers/c/install.sh
-            target/release/libcfgparser_core.so
+            build/cfgparser.h
+            build/install.sh
+            build/libcfgparser_core.so
 
   build_windows:
     runs-on: windows-latest
