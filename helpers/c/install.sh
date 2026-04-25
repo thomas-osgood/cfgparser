@@ -7,11 +7,11 @@
 LIB_DIR=/usr/local/lib
 HEADER_DIR=/usr/local/include
 
-BINARY_FILE=./cfgparser.so
+LIB_FILE=./libcfgparser_core.so
 HEADER_FILE=./cfgparser.h
 
 # step 1: copy the binary file to /usr/local/bin
-cp $BINARY_FILE $LIB_DIR
+cp $LIB_FILE $LIB_DIR
 LASTEXITCODE=$?
 if [[ $LASTEXITCODE -ne 0 ]]; then
     echo "[-] unable to copy shared object to $LIB_DIR. exit code: $LASTEXITCODE" >&2
