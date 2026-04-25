@@ -319,10 +319,29 @@ pub extern "C" fn read_cfg_from_file(
     raw_filename: *const std::ffi::c_char,
     raw_key: *const std::ffi::c_char,
 ) -> *const std::ffi::c_char {
-    read_cfg_from_file_with_encryption(
+    read_cfg_from_file_o(raw_filename, raw_key, 0)
+}
+
+#[no_mangle]
+/// function designed to take in a filename and key, extract configuration
+/// information from the target and return a `<host>:<port>` string.
+///
+/// this calls `read_cfg_from_file_with_encryption` and specified XOR as
+/// the encryption type.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
+pub extern "C" fn read_cfg_from_file_o(
+    raw_filename: *const std::ffi::c_char,
+    raw_key: *const std::ffi::c_char,
+    raw_offset: std::ffi::c_uint,
+) -> *const std::ffi::c_char {
+    read_cfg_from_file_with_encryption_o(
         raw_filename,
         raw_key,
         cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+        raw_offset,
     )
 }
 
