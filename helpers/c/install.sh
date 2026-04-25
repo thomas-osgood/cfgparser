@@ -27,3 +27,6 @@ if [[ $LASTEXITCODE -ne 0 ]]; then
     exit $LASTEXITCODE
 fi
 echo "[+] $HEADER_ILE successfully copied to $HEADER_DIR"
+
+# notify the linker of the new library.
+ldconfig 
