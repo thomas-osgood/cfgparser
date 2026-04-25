@@ -191,6 +191,33 @@ pub extern "C" fn read_cfg(raw_key: *const std::ffi::c_char) -> *const std::ffi:
 #[no_mangle]
 /// function designed to read the configuration bytes and
 /// return the C2 address. this will read the data from the
+/// end of the binary, XOR decrypt it, Base64 decode,
+/// JSON decode it, then grab the address and port from the
+/// Configuration struct that resulted from the JSON decoding.
+///
+/// this calls `read_cfg_with_encryption` and specifies the XOR
+/// encryption type in the function arguments.
+///
+/// the offset specifies the number of bytes back from the end of
+/// the file the last byte of the size block will be found.
+///
+/// important note: it is the caller's responsibility to clean up the string that gets
+/// returned by this funciton. the caller should call `free_memory` on the string returned
+/// by this function after they are done using it, to avoid memory leaks.
+pub extern "C" fn read_cfg_o(
+    raw_key: *const std::ffi::c_char,
+    raw_offset: std::ffi::c_uint,
+) -> *const std::ffi::c_char {
+    read_cfg_with_encryption_o(
+        raw_key,
+        cfgparser_encryption::EncryptionType::Xor as std::ffi::c_int,
+        raw_offset,
+    )
+}
+
+#[no_mangle]
+/// function designed to read the configuration bytes and
+/// return the C2 address. this will read the data from the
 /// end of the binary, decrypt it based on the encryption type
 /// passed in by the user, Base64 decode, JSON decode it, then
 /// grab the address and port from the Configuration struct that
