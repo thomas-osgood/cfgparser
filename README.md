@@ -14,6 +14,27 @@ The valid encryption types are defined in `cfgparser_encryption`'s `EncryptionTy
 
 This section describes the expected embedding process this library will reverse to extract the configuration.
 
+#### General Process
+
+1. JSON encode configuration structure defined in `cfgparser_core`'s `models` module.
+1. Base64-encode the JSON-encoded structure without any padding.
+1. Encrypt (using one of the valid methods) the base64-encoded string.
+1. Take the length of the cipherbytes.
+1. Pack the length of the cipherbytes into an 8-byte block.
+1. Pack the cipherbytes and append the length block to it.
+1. Move to the `end - (offset + len_packed)` position in the file or bytestream.
+1. Write the cipherbytes and size block.
+
+#### Packing Bytes Example
+
+```python
+cipherbytes = xor(base64(configuration),key)
+l_cipher = len(cipherbytes)
+data_block = struct.pack(f">{l_cipher}sQ", cipherbytes, l_cipher)
+```
+
+#### Example (Self-Embed, 0 Offset)
+
 ![encoding process](./media/encoding_process.jpg)
 
 The encrypted output is then expected to be appended to the end of the original binary along with an 8 byte block holding the size of the encrypted packet.
