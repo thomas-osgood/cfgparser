@@ -4,7 +4,9 @@
 
 The purpose of this repository is to have a library that can read configuration data embedded in a file.
 
-The configuration is expected to be embedded in an obfuscated format in the file. The configuration format is a JSON marshalled, base64-encoded, then XOR encrypted byte package. To determine the size of the encrypted configruation, an 8 byte block is expected to be found immediately after the configuration bytes.
+The configuration is expected to be embedded in an obfuscated format in the file. The configuration format is a JSON marshalled, base64-encoded, then encrypted byte package. To determine the size of the encrypted configruation, an 8 byte block is expected to be found immediately after the configuration bytes.
+
+The valid encryption types are defined in `cfgparser_encryption`'s `EncryptionType` enum.
 
 **_important note: this library does not handle the embedding of the configuration, only the extraction._**
 
