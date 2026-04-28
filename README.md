@@ -33,7 +33,7 @@ l_cipher = len(cipherbytes)
 data_block = struct.pack(f">{l_cipher}sQ", cipherbytes, l_cipher)
 ```
 
-#### Example (Self-Embed, 0 Offset)
+#### Example (Self-Embed, 0 Offset, XOR)
 
 ![encoding process](./media/encoding_process.jpg)
 
@@ -44,5 +44,19 @@ The encrypted output is then expected to be appended to the end of the original 
 This library reversed the process described/illustrated above to transform the configuration bytes into a configuration structure.
 
 ### Extract Process
+
+#### General Process
+
+1. Seek to end of file or bytes.
+1. Seek back from end of file `8 + offset` bytes.
+1. Read 8 bytes.
+1. Convert 8 bytes to integer. This is the payload size (aka `sz_payload`).
+1. Seek back from end of file `8 + offset + sz_payload`.
+1. Read `sz_payload` bytes and save as `payload`.
+1. Decrypt `payload` bytes. This is now a `base64-encoded` string.
+1. Base64-decode the string. The JSON-encoded configuration is left.
+1. JSON decode the string into a configuration object.
+
+#### Example (Self-Embex, 0 Offset, XOR)
 
 ![extract process](./media/extract_process.jpg)
