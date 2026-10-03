@@ -5,12 +5,14 @@ mod unit_tests;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum AESError {
+    EmptyKey,
     KeyLength(String),
 }
 
 impl ToString for AESError {
     fn to_string(&self) -> String {
         match self {
+            AESError::EmptyKey => "no key specified".to_string(),
             AESError::KeyLength(s) => s.to_string(),
         }
     }
@@ -28,6 +30,10 @@ pub struct AESCipher {
     key: Vec<u8>,
 }
 
+pub struct AESCipherBuilder {
+    pub key: Option<Vec<u8>>,
+}
+
 /// function designed to check whether a given AES key is valid.
 fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
     let valid_lengths: Vec<usize> = vec![16, 24, 32];
@@ -41,6 +47,32 @@ fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
         16 => Err(AESError::KeyLength(ERR_128.to_string())),
         24 => Err(AESError::KeyLength(ERR_192.to_string())),
         _ => Ok(()),
+    }
+}
+
+impl AESCipherBuilder {
+    pub fn new() -> Self {
+        AESCipherBuilder { key: None }
+    }
+
+    /// set the encryption key for the cipher.
+    pub fn with_key(mut self, key: &[u8]) -> Self {
+        self.key = Some(key.to_vec());
+        self
+    }
+
+    /// validate the cipher options, then build and return
+    /// an AESCipher.
+    pub fn build(self) -> Result<AESCipher, AESError> {
+        let key: Vec<u8> = match self.key {
+            Some(key) => {
+                let _ = validate_key(key.clone())?;
+                key
+            }
+            None => return Err(AESError::EmptyKey),
+        };
+
+        AESCipher::new(key)
     }
 }
 
