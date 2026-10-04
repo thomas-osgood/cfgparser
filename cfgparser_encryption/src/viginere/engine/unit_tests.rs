@@ -131,3 +131,17 @@ fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
     let _ = ViginereCipherBuilder::new().with_key(key).build()?;
     Ok(())
 }
+
+#[test]
+/// test designed to confirm the ViginereCipherBuilder works as expected.
+///
+/// this tests confirms an invalid key passed in will result in an
+/// error when build is called on the ViginereCipherBuilder.
+fn test_builder_invalid() -> Result<(), Box<dyn std::error::Error>> {
+    let key: &[u8] = "this is a key".as_bytes();
+    let build_result = ViginereCipherBuilder::new().with_key(key).build();
+
+    assert!(build_result.is_err());
+
+    Ok(())
+}
