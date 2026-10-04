@@ -120,3 +120,14 @@ fn test_rotate() {
     assert_eq!(rotate(b'/', b'd', false), b'/');
     assert_eq!(rotate(b'5', b'd', false), b'5');
 }
+
+#[test]
+/// test designed to confirm the ViginereCipherBuilder works as expected.
+///
+/// this tests confirms a valid key passed in will result in a successful
+/// build of the ViginereCipherBuilder.
+fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
+    let key: &[u8] = "thisisakey".as_bytes();
+    let _ = ViginereCipherBuilder::new().with_key(key).build()?;
+    Ok(())
+}
