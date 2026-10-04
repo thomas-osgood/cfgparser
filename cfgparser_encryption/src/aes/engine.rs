@@ -12,13 +12,14 @@ pub enum AESError {
 impl ToString for AESError {
     fn to_string(&self) -> String {
         match self {
-            AESError::EmptyKey => "no key specified".to_string(),
+            AESError::EmptyKey => ERR_NO_KEY.to_string(),
             AESError::KeyLength(s) => s.to_string(),
         }
     }
 }
 
 const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
+const ERR_NO_KEY: &str = "no key specified";
 const ERR_128: &str = "AES-128 is not currently supported";
 const ERR_192: &str = "AES-192 is not currently supported";
 
