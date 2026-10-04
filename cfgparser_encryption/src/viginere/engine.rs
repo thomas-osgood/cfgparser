@@ -53,6 +53,7 @@ impl ViginereCipherBuilder {
         ViginereCipherBuilder { key: None }
     }
 
+    /// set the encryption key that will be used by the cipher.
     pub fn with_key(mut self, key: &[u8]) -> Self {
         self.key = Some(key.to_vec());
         self
