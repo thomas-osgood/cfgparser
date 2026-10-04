@@ -19,6 +19,10 @@ pub struct ViginereCipher {
     pub key: Vec<u8>,
 }
 
+pub struct ViginereCipherBuilder {
+    key: Option<Vec<u8>>,
+}
+
 /// function designed to take in a key and determine whether it
 /// is a valid caesar/viginere cipher key.
 pub fn is_valid_key(key: Vec<u8>) -> bool {
@@ -41,6 +45,17 @@ impl ViginereCipher {
             return Err("key must be of non-zero length".into());
         }
         Ok(ViginereCipher { key })
+    }
+}
+
+impl ViginereCipherBuilder {
+    pub fn new() -> Self {
+        ViginereCipherBuilder { key: None }
+    }
+
+    pub fn with_key(mut self, key: &[u8]) -> Self {
+        self.key = Some(key.to_vec());
+        self
     }
 }
 
