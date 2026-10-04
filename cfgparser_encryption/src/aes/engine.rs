@@ -5,18 +5,21 @@ mod unit_tests;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum AESError {
+    EmptyKey,
     KeyLength(String),
 }
 
 impl ToString for AESError {
     fn to_string(&self) -> String {
         match self {
+            AESError::EmptyKey => ERR_NO_KEY.to_string(),
             AESError::KeyLength(s) => s.to_string(),
         }
     }
 }
 
 const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
+const ERR_NO_KEY: &str = "no key specified";
 const ERR_128: &str = "AES-128 is not currently supported";
 const ERR_192: &str = "AES-192 is not currently supported";
 
@@ -26,6 +29,10 @@ pub const NONCE_SIZE: usize = 12;
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AESCipher {
     key: Vec<u8>,
+}
+
+pub struct AESCipherBuilder {
+    key: Option<Vec<u8>>,
 }
 
 /// function designed to check whether a given AES key is valid.
@@ -41,6 +48,32 @@ fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
         16 => Err(AESError::KeyLength(ERR_128.to_string())),
         24 => Err(AESError::KeyLength(ERR_192.to_string())),
         _ => Ok(()),
+    }
+}
+
+impl AESCipherBuilder {
+    pub fn new() -> Self {
+        AESCipherBuilder { key: None }
+    }
+
+    /// set the encryption key for the cipher.
+    pub fn with_key(mut self, key: &[u8]) -> Self {
+        self.key = Some(key.to_vec());
+        self
+    }
+
+    /// validate the cipher options, then build and return
+    /// an AESCipher.
+    pub fn build(self) -> Result<AESCipher, AESError> {
+        let key: Vec<u8> = match self.key {
+            Some(key) => {
+                let _ = validate_key(key.clone())?;
+                key
+            }
+            None => return Err(AESError::EmptyKey),
+        };
+
+        AESCipher::new(key)
     }
 }
 
