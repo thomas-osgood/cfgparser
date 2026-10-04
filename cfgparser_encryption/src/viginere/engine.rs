@@ -65,6 +65,10 @@ impl ViginereCipherBuilder {
             None => return Err("no key sepcified".into()),
         };
 
+        if !is_valid_key(&key) {
+            return Err("invalid key passed in".into());
+        }
+
         ViginereCipher::new(key)
     }
 }
