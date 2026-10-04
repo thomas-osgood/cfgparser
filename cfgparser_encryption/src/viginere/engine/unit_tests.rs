@@ -103,11 +103,11 @@ fn test_adjustkey() {
 /// one or more chars that are not in the alphabet and is not
 /// an empty vector.
 fn test_isvalidkey() {
-    assert_eq!(is_valid_key("testkey".into()), true);
-    assert_eq!(is_valid_key("TESTKEY".into()), true);
-    assert_eq!(is_valid_key("i am a key".into()), false);
-    assert_eq!(is_valid_key("123489".into()), false);
-    assert_eq!(is_valid_key(vec![]), false);
+    assert_eq!(is_valid_key("testkey".as_bytes()), true);
+    assert_eq!(is_valid_key("TESTKEY".as_bytes()), true);
+    assert_eq!(is_valid_key("i am a key".as_bytes()), false);
+    assert_eq!(is_valid_key("123489".as_bytes()), false);
+    assert_eq!(is_valid_key(&[]), false);
 }
 
 #[test]
@@ -119,4 +119,32 @@ fn test_rotate() {
     assert_eq!(rotate(b'-', b'x', false), b'-');
     assert_eq!(rotate(b'/', b'd', false), b'/');
     assert_eq!(rotate(b'5', b'd', false), b'5');
+}
+
+#[test]
+/// test designed to confirm the ViginereCipherBuilder works as expected.
+///
+/// this test confirms a valid key passed in will result in a successful
+/// build of the ViginereCipherBuilder.
+fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
+    let key: &[u8] = "thisisakey".as_bytes();
+    let _ = ViginereCipherBuilder::new().with_key(key).build()?;
+    let _ = ViginereCipherBuilder::default().with_key(key).build()?;
+    Ok(())
+}
+
+#[test]
+/// test designed to confirm the ViginereCipherBuilder works as expected.
+///
+/// this test confirms an invalid key passed in will result in an
+/// error when build is called on the ViginereCipherBuilder.
+fn test_builder_invalid() -> Result<(), Box<dyn std::error::Error>> {
+    let key: &[u8] = "this is a key".as_bytes();
+    let build_result = ViginereCipherBuilder::new().with_key(key).build();
+    let build_result2 = ViginereCipherBuilder::default().build();
+
+    assert!(build_result.is_err());
+    assert!(build_result2.is_err());
+
+    Ok(())
 }
