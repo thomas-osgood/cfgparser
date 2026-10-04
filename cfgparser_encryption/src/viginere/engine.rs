@@ -19,6 +19,7 @@ pub struct ViginereCipher {
     pub key: Vec<u8>,
 }
 
+#[derive(Debug, Default)]
 pub struct ViginereCipherBuilder {
     key: Option<Vec<u8>>,
 }
