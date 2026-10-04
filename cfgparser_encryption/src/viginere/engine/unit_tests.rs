@@ -124,7 +124,7 @@ fn test_rotate() {
 #[test]
 /// test designed to confirm the ViginereCipherBuilder works as expected.
 ///
-/// this tests confirms a valid key passed in will result in a successful
+/// this test confirms a valid key passed in will result in a successful
 /// build of the ViginereCipherBuilder.
 fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "thisisakey".as_bytes();
@@ -135,7 +135,7 @@ fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 /// test designed to confirm the ViginereCipherBuilder works as expected.
 ///
-/// this tests confirms an invalid key passed in will result in an
+/// this test confirms an invalid key passed in will result in an
 /// error when build is called on the ViginereCipherBuilder.
 fn test_builder_invalid() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "this is a key".as_bytes();
