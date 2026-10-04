@@ -80,7 +80,7 @@ impl crate::Decryptor for ViginereCipher {
         let len_key = self.key.len();
         let rev: bool = true;
 
-        if !is_valid_key(self.key.as_slice()) {
+        if !is_valid_key(&self.key) {
             return Err("invalid key passed in".into());
         }
 
@@ -115,7 +115,7 @@ impl crate::Encryptor for ViginereCipher {
         let len_key = self.key.len();
         let rev: bool = false;
 
-        if !is_valid_key(self.key.as_slice()) {
+        if !is_valid_key(&self.key) {
             return Err("invalid key passed in".into());
         }
 
