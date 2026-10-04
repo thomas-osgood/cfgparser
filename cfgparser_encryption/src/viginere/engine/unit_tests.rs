@@ -129,6 +129,7 @@ fn test_rotate() {
 fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "thisisakey".as_bytes();
     let _ = ViginereCipherBuilder::new().with_key(key).build()?;
+    let _ = ViginereCipherBuilder::default().with_key(key).build()?;
     Ok(())
 }
 
@@ -140,8 +141,10 @@ fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
 fn test_builder_invalid() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "this is a key".as_bytes();
     let build_result = ViginereCipherBuilder::new().with_key(key).build();
+    let build_result2 = ViginereCipherBuilder::default().build();
 
     assert!(build_result.is_err());
+    assert!(build_result2.is_err());
 
     Ok(())
 }
