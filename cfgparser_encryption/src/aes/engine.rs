@@ -31,7 +31,7 @@ pub struct AESCipher {
 }
 
 pub struct AESCipherBuilder {
-    pub key: Option<Vec<u8>>,
+    key: Option<Vec<u8>>,
 }
 
 /// function designed to check whether a given AES key is valid.
