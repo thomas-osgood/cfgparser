@@ -58,6 +58,15 @@ impl ViginereCipherBuilder {
         self.key = Some(key.to_vec());
         self
     }
+
+    pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+        let key: Vec<u8> = match self.key {
+            Some(k) => k,
+            None => return Err("no key sepcified".into()),
+        };
+
+        ViginereCipher::new(key)
+    }
 }
 
 impl crate::Decryptor for ViginereCipher {
