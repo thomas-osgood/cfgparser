@@ -103,11 +103,11 @@ fn test_adjustkey() {
 /// one or more chars that are not in the alphabet and is not
 /// an empty vector.
 fn test_isvalidkey() {
-    assert_eq!(is_valid_key("testkey".into()), true);
-    assert_eq!(is_valid_key("TESTKEY".into()), true);
-    assert_eq!(is_valid_key("i am a key".into()), false);
-    assert_eq!(is_valid_key("123489".into()), false);
-    assert_eq!(is_valid_key(vec![]), false);
+    assert_eq!(is_valid_key("testkey".as_bytes()), true);
+    assert_eq!(is_valid_key("TESTKEY".as_bytes()), true);
+    assert_eq!(is_valid_key("i am a key".as_bytes()), false);
+    assert_eq!(is_valid_key("123489".as_bytes()), false);
+    assert_eq!(is_valid_key(&[]), false);
 }
 
 #[test]
