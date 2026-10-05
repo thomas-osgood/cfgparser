@@ -4,7 +4,33 @@ mod unit_tests;
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 /// struct designed to implement Decrypt and Encrypt for an XOR cipher.
 pub struct XORCipher {
-    pub key: Vec<u8>,
+    key: Vec<u8>,
+}
+
+#[derive(Debug, Default)]
+pub struct XORCipherBuilder {
+    key: Option<Vec<u8>>,
+}
+
+impl XORCipherBuilder {
+    pub fn new() -> Self {
+        XORCipherBuilder { key: None }
+    }
+
+    /// set the key the XOR cipher will use for encryption/decryption.
+    pub fn with_key(mut self, key: Vec<u8>) -> Self {
+        self.key = Some(key);
+        self
+    }
+
+    pub fn build(self) -> XORCipher {
+        let key: Vec<u8> = match self.key {
+            Some(key) => key,
+            None => vec![],
+        };
+
+        XORCipher::new(key)
+    }
 }
 
 impl XORCipher {
