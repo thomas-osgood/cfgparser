@@ -79,7 +79,7 @@ impl crate::Decryptor for ViginereCipher {
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         // let mut plaintext: Vec<u8> = vec![];
         let mut key_pos: usize = 0;
         let len_key = self.key.len();
@@ -115,7 +115,7 @@ impl crate::Encryptor for ViginereCipher {
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let mut key_pos: usize = 0;
         let len_key = self.key.len();
         let rev: bool = false;

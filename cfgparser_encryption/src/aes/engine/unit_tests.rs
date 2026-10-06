@@ -6,7 +6,7 @@ use super::*;
 /// test designed to confirm the decrypt functionality of the
 /// AESCipher is working as expected.
 fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
-    let ciphertext: Vec<u8> = vec![
+    let ciphertext: &[u8] = &[
         66, 168, 189, 189, 234, 64, 241, 80, 19, 32, 71, 136, 110, 231, 230, 187, 172, 117, 86,
         127, 195, 68, 233, 166, 8, 215, 110, 4, 78, 29, 108, 177, 149, 241, 185, 183, 191, 78, 205,
         233, 246, 77, 10, 158,
@@ -47,9 +47,9 @@ fn test_encrypt() -> Result<(), Box<dyn std::error::Error>> {
         Ok(c) => c,
         Err(e) => return Err(e.to_string().into()),
     };
-    let plaintext: Vec<u8> = b"this is a secret".to_vec();
+    let plaintext: &[u8] = b"this is a secret";
 
-    let result: Vec<u8> = cipher.decrypt(cipher.encrypt(plaintext.clone())?)?;
+    let result: Vec<u8> = cipher.decrypt(&cipher.encrypt(plaintext)?)?;
 
     assert_eq!(result, plaintext);
 
