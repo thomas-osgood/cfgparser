@@ -44,7 +44,7 @@ impl crate::Decryptor for XORCipher {
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in ciphertext and the XORCipher's key.
-    fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(encrypt_decrypt(self.key.clone(), ciphertext))
     }
 }
@@ -54,19 +54,19 @@ impl crate::Encryptor for XORCipher {
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in plaintext and the XORCipher's key.
-    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(encrypt_decrypt(self.key.clone(), plaintext))
     }
 }
 
 /// function designed to XOR encrypt/decrypt data using a given key.
-pub fn encrypt_decrypt(key: Vec<u8>, data: Vec<u8>) -> Vec<u8> {
+pub fn encrypt_decrypt(key: Vec<u8>, data: &[u8]) -> Vec<u8> {
     let key_len: usize = key.len();
 
     // if no key given, there is nothing to do to the
     // data, so return it as-is.
     if key_len < 1 {
-        return data;
+        return data.to_vec();
     }
 
     // loop over the data and XOR each item with the corresponding
