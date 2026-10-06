@@ -9,8 +9,8 @@ use crate::{Decryptor, Encryptor};
 /// all functions call the others correctly.
 fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
     let key: Vec<u8> = "there".into();
-    let ciphertext: Vec<u8> = "alpcs xciicuvhp".into();
-    let ciphertext2: Vec<u8> = "Alpcs xciicuvhp".into();
+    let ciphertext: &[u8] = "alpcs xciicuvhp".as_bytes();
+    let ciphertext2: &[u8] = "Alpcs xciicuvhp".as_bytes();
 
     let expected: Vec<u8> = "hello everybody".into();
     let expected2: Vec<u8> = "Hello everybody".into();
@@ -35,8 +35,8 @@ fn test_decrypt() -> Result<(), Box<dyn std::error::Error>> {
 /// all functions call the others correctly.
 fn test_encrypt() -> Result<(), Box<dyn std::error::Error>> {
     let key: Vec<u8> = "there".into();
-    let plaintext: Vec<u8> = "hello everybody".into();
-    let plaintext2: Vec<u8> = "Hello everybody".into();
+    let plaintext: &[u8] = "hello everybody".as_bytes();
+    let plaintext2: &[u8] = "Hello everybody".as_bytes();
 
     let expected: Vec<u8> = "alpcs xciicuvhp".into();
     let expected2: Vec<u8> = "Alpcs xciicuvhp".into();
