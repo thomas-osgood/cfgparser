@@ -93,7 +93,7 @@ impl AESCipher {
 }
 
 impl crate::Decryptor for AESCipher {
-    fn decrypt(&self, ciphertext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
 
@@ -119,7 +119,7 @@ impl crate::Decryptor for AESCipher {
 }
 
 impl crate::Encryptor for AESCipher {
-    fn encrypt(&self, plaintext: Vec<u8>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
 
