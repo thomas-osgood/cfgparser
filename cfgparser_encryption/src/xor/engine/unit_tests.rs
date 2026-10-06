@@ -55,3 +55,30 @@ fn test_xorcipher() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[test]
+/// test designed to confirm the correct functionality of the XORCipherBuilder.
+///
+/// this creates two XORCiphers using the builder and tests the decrypt functionality
+/// of each.
+fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
+    let key: &[u8] = "msgpadkey".as_bytes();
+    let cipher1 = XORCipherBuilder::new().with_key(key.to_vec()).build();
+    let cipher2 = XORCipherBuilder::default().with_key(key.to_vec()).build();
+    let test_message: Vec<u8> = "this is my secret message. you cannot get the contents of it."
+        .as_bytes()
+        .to_vec();
+    let expected_encrypt: &[u8] = &[
+        25, 27, 14, 3, 65, 13, 24, 69, 20, 20, 83, 20, 21, 2, 22, 14, 17, 89, 0, 22, 20, 3, 0, 3,
+        14, 75, 89, 20, 28, 18, 80, 2, 5, 5, 11, 22, 25, 83, 0, 21, 21, 68, 31, 13, 28, 77, 16, 8,
+        30, 21, 1, 5, 17, 10, 77, 28, 1, 80, 8, 16, 69,
+    ];
+
+    let result_decrypt: Vec<u8> = cipher1.decrypt(expected_encrypt.to_vec())?;
+    let result_decrypt2: Vec<u8> = cipher2.decrypt(expected_encrypt.to_vec())?;
+
+    assert_eq!(test_message, result_decrypt);
+    assert_eq!(test_message, result_decrypt2);
+
+    Ok(())
+}

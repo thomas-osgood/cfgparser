@@ -19,9 +19,14 @@ pub struct ViginereCipher {
     pub key: Vec<u8>,
 }
 
+#[derive(Debug, Default)]
+pub struct ViginereCipherBuilder {
+    key: Option<Vec<u8>>,
+}
+
 /// function designed to take in a key and determine whether it
 /// is a valid caesar/viginere cipher key.
-pub fn is_valid_key(key: Vec<u8>) -> bool {
+pub fn is_valid_key(key: &[u8]) -> bool {
     if key.len() < 1 {
         return false;
     }
@@ -32,7 +37,7 @@ pub fn is_valid_key(key: Vec<u8>) -> bool {
     // the key, the key is valid.
     //
     // if the condition is true, the key is not valid.
-    !key.into_iter().any(|letter| !is_letter(letter))
+    !key.into_iter().any(|letter| !is_letter(*letter))
 }
 
 impl ViginereCipher {
@@ -41,6 +46,31 @@ impl ViginereCipher {
             return Err("key must be of non-zero length".into());
         }
         Ok(ViginereCipher { key })
+    }
+}
+
+impl ViginereCipherBuilder {
+    pub fn new() -> Self {
+        ViginereCipherBuilder { key: None }
+    }
+
+    /// set the encryption key that will be used by the cipher.
+    pub fn with_key(mut self, key: &[u8]) -> Self {
+        self.key = Some(key.to_vec());
+        self
+    }
+
+    pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+        let key: Vec<u8> = match self.key {
+            Some(k) => k,
+            None => return Err("no key sepcified".into()),
+        };
+
+        if !is_valid_key(&key) {
+            return Err("invalid key passed in".into());
+        }
+
+        ViginereCipher::new(key)
     }
 }
 
@@ -55,7 +85,7 @@ impl crate::Decryptor for ViginereCipher {
         let len_key = self.key.len();
         let rev: bool = true;
 
-        if !is_valid_key(self.key.clone()) {
+        if !is_valid_key(&self.key) {
             return Err("invalid key passed in".into());
         }
 
@@ -90,7 +120,7 @@ impl crate::Encryptor for ViginereCipher {
         let len_key = self.key.len();
         let rev: bool = false;
 
-        if !is_valid_key(self.key.clone()) {
+        if !is_valid_key(&self.key) {
             return Err("invalid key passed in".into());
         }
 

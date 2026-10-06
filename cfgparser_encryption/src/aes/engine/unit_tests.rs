@@ -74,3 +74,29 @@ fn test_validate_key() -> Result<(), AESError> {
 
     Ok(())
 }
+
+#[test]
+/// attempt to build a valid AESCipher using AESCipherBuilder. if this
+/// test passes, the AESCipherBuilder logic is valid.
+fn test_builder_valid() -> Result<(), AESError> {
+    let key: &[u8] = &[
+        57, 72, 60, 6, 7, 247, 134, 240, 254, 56, 39, 120, 58, 56, 12, 209, 39, 26, 66, 154, 78,
+        38, 106, 196, 105, 68, 79, 66, 220, 128, 101, 177,
+    ];
+    let _ = AESCipherBuilder::new().with_key(key).build()?;
+    Ok(())
+}
+
+#[test]
+/// attempt to build an invalid AESCipher using AESCipherBuilder and passing
+/// in a key length that is not valid. if this test passes, the AESCipherBuilder
+/// logic surrounding the key length is valid.
+fn test_builder_invalid_key() -> Result<(), AESError> {
+    let key: &[u8] = &[
+        116, 104, 105, 115, 32, 105, 115, 32, 97, 110, 32, 105, 110, 118, 97, 108, 105, 100, 32,
+        107, 101, 121,
+    ];
+    let build_result: Result<AESCipher, AESError> = AESCipherBuilder::new().with_key(key).build();
+    assert!(build_result.is_err());
+    Ok(())
+}
