@@ -31,7 +31,7 @@ where
     D: cfgparser_encryption::Decryptor,
 {
     // XOR decrypt the raw_payload bytes.
-    let plaintext: Vec<u8> = decryptor.decrypt(raw_payload.to_vec())?;
+    let plaintext: Vec<u8> = decryptor.decrypt(raw_payload)?;
     // base64-decode the payload and save the result
     Ok(base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)?)
 }
