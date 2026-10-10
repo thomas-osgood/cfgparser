@@ -16,7 +16,7 @@ const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 /// struct designed to implement encrypt and decrypt for a Viginere cipher.
 pub struct ViginereCipher {
-    pub key: Vec<u8>,
+    key: Vec<u8>,
 }
 
 #[derive(Debug, Default)]
