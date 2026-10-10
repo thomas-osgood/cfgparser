@@ -37,7 +37,7 @@ pub struct AESCipherBuilder {
 
 /// function designed to check whether a given AES key is valid.
 fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
-    let valid_lengths: Vec<usize> = vec![16, 24, 32];
+    let valid_lengths: &[usize] = &[16, 24, 32];
     let key_size: usize = key.len();
 
     if !valid_lengths.contains(&key_size) {
