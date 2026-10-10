@@ -129,7 +129,7 @@ impl crate::Encryptor for AESCipher {
         // create a new AES cipher object using the encryption key.
         let aescipher = aes_gcm::Aes256Gcm::new(key);
 
-        match aescipher.encrypt(&nonce, &plaintext[..]) {
+        match aescipher.encrypt(&nonce, plaintext) {
             Ok(enc_result) => {
                 // return a slice with the first 12 bytes being the
                 // nonce and the remaining bytes being the encrypted
