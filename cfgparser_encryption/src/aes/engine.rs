@@ -31,12 +31,12 @@ pub struct AESCipher {
     key: Vec<u8>,
 }
 
-pub struct AESCipherBuilder {
-    key: Option<Vec<u8>>,
+pub struct AESCipherBuilder<'build_life> {
+    key: Option<&'build_life [u8]>,
 }
 
 /// function designed to check whether a given AES key is valid.
-fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
+fn validate_key(key: &[u8]) -> Result<(), AESError> {
     let valid_lengths: &[usize] = &[16, 24, 32];
     let key_size: usize = key.len();
 
@@ -51,42 +51,42 @@ fn validate_key(key: Vec<u8>) -> Result<(), AESError> {
     }
 }
 
-impl AESCipherBuilder {
+impl<'build_life> AESCipherBuilder<'build_life> {
     pub fn new() -> Self {
         AESCipherBuilder { key: None }
     }
 
     /// set the encryption key for the cipher.
-    pub fn with_key(mut self, key: &[u8]) -> Self {
-        self.key = Some(key.to_vec());
+    pub fn with_key(mut self, key: &'build_life [u8]) -> Self {
+        self.key = Some(key);
         self
     }
 
     /// validate the cipher options, then build and return
     /// an AESCipher.
     pub fn build(self) -> Result<AESCipher, AESError> {
-        let key: Vec<u8> = match self.key {
+        let key: &[u8] = match self.key {
             Some(key) => {
-                let _ = validate_key(key.clone())?;
+                let _ = validate_key(key)?;
                 key
             }
             None => return Err(AESError::EmptyKey),
         };
 
-        AESCipher::new(key)
+        AESCipher::new(key.to_vec())
     }
 }
 
 impl AESCipher {
     pub fn new(key: Vec<u8>) -> Result<AESCipher, AESError> {
-        validate_key(key.clone())?;
+        validate_key(&key)?;
         Ok(AESCipher { key })
     }
 
     /// function designed to update the key used for encryption
     /// and decryption by the AESCipher.
     pub fn update_key(&mut self, key: Vec<u8>) -> Result<(), AESError> {
-        validate_key(key.clone())?;
+        validate_key(&key)?;
         self.key = key;
         Ok(())
     }
