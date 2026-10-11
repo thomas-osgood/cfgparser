@@ -20,8 +20,8 @@ pub struct ViginereCipher {
 }
 
 #[derive(Debug, Default)]
-pub struct ViginereCipherBuilder {
-    key: Option<Vec<u8>>,
+pub struct ViginereCipherBuilder<'a> {
+    key: Option<&'a [u8]>,
 }
 
 /// function designed to take in a key and determine whether it
@@ -49,19 +49,19 @@ impl ViginereCipher {
     }
 }
 
-impl ViginereCipherBuilder {
+impl<'build_life> ViginereCipherBuilder<'build_life> {
     pub fn new() -> Self {
         ViginereCipherBuilder { key: None }
     }
 
     /// set the encryption key that will be used by the cipher.
-    pub fn with_key(mut self, key: &[u8]) -> Self {
-        self.key = Some(key.to_vec());
+    pub fn with_key(mut self, key: &'build_life [u8]) -> Self {
+        self.key = Some(key);
         self
     }
 
     pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
-        let key: Vec<u8> = match self.key {
+        let key: &[u8] = match self.key {
             Some(k) => k,
             None => return Err("no key sepcified".into()),
         };
@@ -70,7 +70,7 @@ impl ViginereCipherBuilder {
             return Err("invalid key passed in".into());
         }
 
-        ViginereCipher::new(key)
+        ViginereCipher::new(key.to_vec())
     }
 }
 
