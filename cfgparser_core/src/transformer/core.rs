@@ -29,6 +29,7 @@ pub fn transform_payload<D>(
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>>
 where
     D: cfgparser_encryption::Decryptor,
+    D::Error: 'static,
 {
     // XOR decrypt the raw_payload bytes.
     let plaintext: Vec<u8> = decryptor.decrypt(raw_payload)?;
