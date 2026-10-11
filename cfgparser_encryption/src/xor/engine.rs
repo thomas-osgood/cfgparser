@@ -62,7 +62,7 @@ impl crate::Decryptor for XORCipher {
     /// this will call the encrypt_decrypt function with the
     /// passed in ciphertext and the XORCipher's key.
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
-        Ok(encrypt_decrypt(self.key.clone(), ciphertext))
+        Ok(encrypt_decrypt(&self.key, ciphertext))
     }
 }
 
@@ -74,12 +74,12 @@ impl crate::Encryptor for XORCipher {
     /// this will call the encrypt_decrypt function with the
     /// passed in plaintext and the XORCipher's key.
     fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
-        Ok(encrypt_decrypt(self.key.clone(), plaintext))
+        Ok(encrypt_decrypt(&self.key, plaintext))
     }
 }
 
 /// function designed to XOR encrypt/decrypt data using a given key.
-pub fn encrypt_decrypt(key: Vec<u8>, data: &[u8]) -> Vec<u8> {
+pub fn encrypt_decrypt(key: &[u8], data: &[u8]) -> Vec<u8> {
     let key_len: usize = key.len();
 
     // if no key given, there is nothing to do to the

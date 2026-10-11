@@ -8,12 +8,10 @@ use super::*;
 fn test_encrypt_decrypt() {
     let test_key: &[u8] = "mykey".as_bytes();
     let test_message: &[u8] = "this is a secret message".as_bytes();
-    let result_full_cycle: Vec<u8> = encrypt_decrypt(
-        test_key.to_vec(),
-        &encrypt_decrypt(test_key.to_vec(), test_message),
-    );
+    let result_full_cycle: Vec<u8> =
+        encrypt_decrypt(test_key, &encrypt_decrypt(test_key, test_message));
 
-    let test_key2: Vec<u8> = "msgpadkey".as_bytes().to_vec();
+    let test_key2: &[u8] = "msgpadkey".as_bytes();
     let test_message2: &[u8] =
         "this is my secret message. you cannot get the contents of it.".as_bytes();
     let expected: &[u8] = &[
@@ -24,7 +22,7 @@ fn test_encrypt_decrypt() {
     let result: Vec<u8> = encrypt_decrypt(test_key2, test_message2);
 
     let test_message3: &[u8] = &[];
-    let result_empty: Vec<u8> = encrypt_decrypt(test_key.to_vec(), test_message3);
+    let result_empty: Vec<u8> = encrypt_decrypt(test_key, test_message3);
 
     assert_eq!(result_full_cycle, test_message);
     assert_eq!(result, expected);
