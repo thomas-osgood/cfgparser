@@ -61,8 +61,8 @@ fn test_xorcipher() -> Result<(), Box<dyn std::error::Error>> {
 /// of each.
 fn test_builder_valid() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "msgpadkey".as_bytes();
-    let cipher1 = XORCipherBuilder::new().with_key(key.to_vec()).build();
-    let cipher2 = XORCipherBuilder::default().with_key(key.to_vec()).build();
+    let cipher1 = XORCipherBuilder::new().with_key(key).build();
+    let cipher2 = XORCipherBuilder::default().with_key(key).build();
     let test_message: Vec<u8> = "this is my secret message. you cannot get the contents of it."
         .as_bytes()
         .to_vec();

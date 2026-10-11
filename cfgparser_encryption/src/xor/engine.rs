@@ -8,28 +8,28 @@ pub struct XORCipher {
 }
 
 #[derive(Debug, Default)]
-pub struct XORCipherBuilder {
-    key: Option<Vec<u8>>,
+pub struct XORCipherBuilder<'a> {
+    key: Option<&'a [u8]>,
 }
 
-impl XORCipherBuilder {
+impl<'build_life> XORCipherBuilder<'build_life> {
     pub fn new() -> Self {
         XORCipherBuilder { key: None }
     }
 
     /// set the key the XOR cipher will use for encryption/decryption.
-    pub fn with_key(mut self, key: Vec<u8>) -> Self {
+    pub fn with_key(mut self, key: &'build_life [u8]) -> Self {
         self.key = Some(key);
         self
     }
 
     pub fn build(self) -> XORCipher {
-        let key: Vec<u8> = match self.key {
+        let key: &[u8] = match self.key {
             Some(key) => key,
-            None => vec![],
+            None => &[],
         };
 
-        XORCipher::new(key)
+        XORCipher::new(key.to_vec())
     }
 }
 
