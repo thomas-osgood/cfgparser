@@ -1,66 +1,92 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 #[cfg(test)]
 mod unit_tests;
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum XORCipherError {
+    EmptyKey,
+    InvalidKey,
+}
+
+impl std::fmt::Display for XORCipherError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            XORCipherError::EmptyKey => write!(f, "empty key passed in"),
+            XORCipherError::InvalidKey => write!(f, "invalid key passed in"),
+        }
+    }
+}
+
+impl std::error::Error for XORCipherError {}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 /// struct designed to implement Decrypt and Encrypt for an XOR cipher.
 pub struct XORCipher {
     key: Vec<u8>,
 }
 
 #[derive(Debug, Default)]
-pub struct XORCipherBuilder {
-    key: Option<Vec<u8>>,
+pub struct XORCipherBuilder<'build_life> {
+    key: Option<&'build_life [u8]>,
 }
 
-impl XORCipherBuilder {
+impl<'build_life> XORCipherBuilder<'build_life> {
     pub fn new() -> Self {
         XORCipherBuilder { key: None }
     }
 
     /// set the key the XOR cipher will use for encryption/decryption.
-    pub fn with_key(mut self, key: Vec<u8>) -> Self {
+    pub fn with_key(mut self, key: &'build_life [u8]) -> Self {
         self.key = Some(key);
         self
     }
 
-    pub fn build(self) -> XORCipher {
-        let key: Vec<u8> = match self.key {
+    pub fn build(self) -> Result<XORCipher, XORCipherError> {
+        let key: &[u8] = match self.key {
             Some(key) => key,
-            None => vec![],
+            None => &[],
         };
 
-        XORCipher::new(key)
+        XORCipher::new(key.to_vec())
     }
 }
 
 impl XORCipher {
-    pub fn new(key: Vec<u8>) -> XORCipher {
-        XORCipher { key }
+    pub fn new(key: Vec<u8>) -> Result<XORCipher, XORCipherError> {
+        if key.len() < 1 {
+            return Err(XORCipherError::EmptyKey);
+        }
+        Ok(XORCipher { key })
     }
 }
 
 impl crate::Decryptor for XORCipher {
+    type Error = XORCipherError;
+
     /// implementation of the Decryptor trait for XORCipher.
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in ciphertext and the XORCipher's key.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        Ok(encrypt_decrypt(self.key.clone(), ciphertext))
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+        Ok(encrypt_decrypt(&self.key, ciphertext))
     }
 }
 
 impl crate::Encryptor for XORCipher {
+    type Error = XORCipherError;
+
     /// implementation of the Encryptor trait for XORCipher.
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in plaintext and the XORCipher's key.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        Ok(encrypt_decrypt(self.key.clone(), plaintext))
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+        Ok(encrypt_decrypt(&self.key, plaintext))
     }
 }
 
 /// function designed to XOR encrypt/decrypt data using a given key.
-pub fn encrypt_decrypt(key: Vec<u8>, data: &[u8]) -> Vec<u8> {
+pub fn encrypt_decrypt(key: &[u8], data: &[u8]) -> Vec<u8> {
     let key_len: usize = key.len();
 
     // if no key given, there is nothing to do to the
@@ -79,5 +105,5 @@ pub fn encrypt_decrypt(key: Vec<u8>, data: &[u8]) -> Vec<u8> {
         .map(|(idx, &current)| current ^ key[idx % key_len])
         .collect();
 
-    return result;
+    result
 }

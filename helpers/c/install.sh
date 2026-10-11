@@ -10,7 +10,7 @@ HEADER_DIR=/usr/local/include
 LIB_FILE=./libcfgparser_core.so
 HEADER_FILE=./cfgparser.h
 
-# step 1: copy the binary file to /usr/local/bin
+# step 1: copy the binary file to /usr/local/lib
 cp $LIB_FILE $LIB_DIR
 LASTEXITCODE=$?
 if [[ $LASTEXITCODE -ne 0 ]]; then

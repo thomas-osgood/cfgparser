@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -13,15 +15,32 @@ const UPPER_Z: u8 = b'Z' + 1;
 /// lower or visa versa.
 const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ViginerCipherError {
+    InvalidKey,
+    NoKey,
+}
+
+impl std::fmt::Display for ViginerCipherError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ViginerCipherError::InvalidKey => write!(f, "invalid key passed in."),
+            ViginerCipherError::NoKey => write!(f, "no key specified"),
+        }
+    }
+}
+
+impl std::error::Error for ViginerCipherError {}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 /// struct designed to implement encrypt and decrypt for a Viginere cipher.
 pub struct ViginereCipher {
-    pub key: Vec<u8>,
+    key: Vec<u8>,
 }
 
 #[derive(Debug, Default)]
-pub struct ViginereCipherBuilder {
-    key: Option<Vec<u8>>,
+pub struct ViginereCipherBuilder<'build_life> {
+    key: Option<&'build_life [u8]>,
 }
 
 /// function designed to take in a key and determine whether it
@@ -41,53 +60,46 @@ pub fn is_valid_key(key: &[u8]) -> bool {
 }
 
 impl ViginereCipher {
-    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
-        if key.len() < 1 {
-            return Err("key must be of non-zero length".into());
+    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, ViginerCipherError> {
+        if !is_valid_key(&key) {
+            return Err(ViginerCipherError::InvalidKey);
         }
         Ok(ViginereCipher { key })
     }
 }
 
-impl ViginereCipherBuilder {
+impl<'build_life> ViginereCipherBuilder<'build_life> {
     pub fn new() -> Self {
         ViginereCipherBuilder { key: None }
     }
 
     /// set the encryption key that will be used by the cipher.
-    pub fn with_key(mut self, key: &[u8]) -> Self {
-        self.key = Some(key.to_vec());
+    pub fn with_key(mut self, key: &'build_life [u8]) -> Self {
+        self.key = Some(key);
         self
     }
 
-    pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
-        let key: Vec<u8> = match self.key {
+    pub fn build(self) -> Result<ViginereCipher, ViginerCipherError> {
+        let key: &[u8] = match self.key {
             Some(k) => k,
-            None => return Err("no key sepcified".into()),
+            None => return Err(ViginerCipherError::NoKey),
         };
 
-        if !is_valid_key(&key) {
-            return Err("invalid key passed in".into());
-        }
-
-        ViginereCipher::new(key)
+        ViginereCipher::new(key.to_vec())
     }
 }
 
 impl crate::Decryptor for ViginereCipher {
+    type Error = ViginerCipherError;
+
     /// function designed to implement a viginere cipher.
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         // let mut plaintext: Vec<u8> = vec![];
-        let mut key_pos: usize = 0;
         let len_key = self.key.len();
         let rev: bool = true;
-
-        if !is_valid_key(&self.key) {
-            return Err("invalid key passed in".into());
-        }
 
         // go through each letter in the ciphertext and rotate it
         // by the inverse key value to convert it back to the
@@ -95,34 +107,32 @@ impl crate::Decryptor for ViginereCipher {
         let plaintext: Vec<u8> = ciphertext
             .iter()
             .enumerate()
-            .map(|(_, &current)| {
-                let new: u8 = rotate(current, self.key[key_pos % len_key], rev);
+            .scan(0, |key_pos, (_, &current)| {
+                let key_char: u8 = self.key[*key_pos % len_key];
+                let rotated: u8 = rotate(current, key_char, rev);
 
                 if is_letter(current) {
-                    key_pos += 1;
+                    *key_pos += 1;
                 }
 
-                return new;
+                Some(rotated)
             })
             .collect();
 
-        return Ok(plaintext);
+        Ok(plaintext)
     }
 }
 
 impl crate::Encryptor for ViginereCipher {
+    type Error = ViginerCipherError;
+
     /// function designed to implement a viginere cipher.
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let mut key_pos: usize = 0;
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         let len_key = self.key.len();
         let rev: bool = false;
-
-        if !is_valid_key(&self.key) {
-            return Err("invalid key passed in".into());
-        }
 
         // go through each letter in the plaintext and rotate it
         // by the corresponding key value to generate the final
@@ -130,18 +140,19 @@ impl crate::Encryptor for ViginereCipher {
         let ciphertext: Vec<u8> = plaintext
             .iter()
             .enumerate()
-            .map(|(_, &current)| {
-                let new = rotate(current, self.key[key_pos % len_key], rev);
+            .scan(0, |key_pos, (_, &current)| {
+                let key_char: u8 = self.key[*key_pos % len_key];
+                let rotated = rotate(current, key_char, rev);
 
                 if is_letter(current) {
-                    key_pos += 1;
+                    *key_pos += 1;
                 }
 
-                return new;
+                Some(rotated)
             })
             .collect();
 
-        return Ok(ciphertext);
+        Ok(ciphertext)
     }
 }
 

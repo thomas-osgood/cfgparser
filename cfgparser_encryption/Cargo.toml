@@ -1,6 +1,6 @@
 [package]
 name = "cfgparser_encryption"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 
 [lib]
@@ -11,3 +11,4 @@ aes = []
 
 [dependencies]
 aes-gcm = "0.10.3"
+zeroize = { version = "1.9.1", features = ["derive"] }
