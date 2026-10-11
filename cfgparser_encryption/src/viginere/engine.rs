@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -30,7 +32,7 @@ impl std::fmt::Display for ViginerCipherError {
 
 impl std::error::Error for ViginerCipherError {}
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 /// struct designed to implement encrypt and decrypt for a Viginere cipher.
 pub struct ViginereCipher {
     key: Vec<u8>,
