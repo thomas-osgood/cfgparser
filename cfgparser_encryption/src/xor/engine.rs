@@ -98,5 +98,5 @@ pub fn encrypt_decrypt(key: Vec<u8>, data: &[u8]) -> Vec<u8> {
         .map(|(idx, &current)| current ^ key[idx % key_len])
         .collect();
 
-    return result;
+    result
 }
