@@ -118,7 +118,10 @@ fn get_decryptor(
     let decryptor: cfgparser_encryption::DynamicCipher = match enc_type_i32 {
         xor if xor == cfgparser_encryption::EncryptionType::Xor as i32 => {
             let cipher: cfgparser_encryption::xor::engine::XORCipher =
-                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+                match cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec()) {
+                    Ok(cipher) => cipher,
+                    Err(e) => return Err(e.into()),
+                };
             cfgparser_encryption::DynamicCipher::XOR(cipher)
         }
         vig if vig == cfgparser_encryption::EncryptionType::Viginere as i32 => {

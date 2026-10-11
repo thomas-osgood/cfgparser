@@ -22,7 +22,7 @@ fn test_read() -> TestResult {
 
     let key: &str = "secret";
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec())?;
     let reader: extractor::core::TestExtractor = extractor::core::TestExtractor;
 
     let extracted: models::core::Configuration =
@@ -57,7 +57,7 @@ fn test_read_offset() -> TestResult {
 
     let key: &str = "sabre";
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec())?;
     let extracted: models::core::Configuration = read(reader, decryptor, 5)?;
 
     assert_eq!(extracted, expected);
@@ -140,7 +140,7 @@ fn test_read_bytesextractor() -> TestResult {
 
     let key: &str = "sabre";
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec())?;
     let extracted: models::core::Configuration =
         read(reader, decryptor, extractor::core::OFFSET_NONE)?;
 
@@ -168,7 +168,7 @@ fn test_read_from_vec() -> TestResult {
     };
     let key: &str = "sabre";
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec());
+        cfgparser_encryption::xor::engine::XORCipher::new(key.as_bytes().to_vec())?;
 
     let extracted: models::core::Configuration =
         read_from_vec(bytes_vec, decryptor, extractor::core::OFFSET_NONE)?;

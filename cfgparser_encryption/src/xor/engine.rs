@@ -40,7 +40,7 @@ impl<'build_life> XORCipherBuilder<'build_life> {
         self
     }
 
-    pub fn build(self) -> XORCipher {
+    pub fn build(self) -> Result<XORCipher, XORCipherError> {
         let key: &[u8] = match self.key {
             Some(key) => key,
             None => &[],
@@ -51,8 +51,11 @@ impl<'build_life> XORCipherBuilder<'build_life> {
 }
 
 impl XORCipher {
-    pub fn new(key: Vec<u8>) -> XORCipher {
-        XORCipher { key }
+    pub fn new(key: Vec<u8>) -> Result<XORCipher, XORCipherError> {
+        if key.len() < 1 {
+            return Err(XORCipherError::EmptyKey);
+        }
+        Ok(XORCipher { key })
     }
 }
 

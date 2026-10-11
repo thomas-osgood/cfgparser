@@ -29,10 +29,10 @@ fn test_deserialize_payload() {
 /// the hard-coded "message" that is going to be transformed
 /// into plaintext has been base64 encoded and XOR encrypted
 /// using tools outside of rust.
-fn test_transform_payload_xor() {
+fn test_transform_payload_xor() -> Result<(), Box<dyn std::error::Error>> {
     let key: &[u8] = "testkey".as_bytes();
     let decryptor: cfgparser_encryption::xor::engine::XORCipher =
-        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+        cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec())?;
     let expected: String = "This is a decrypted message".to_string();
     let message: [u8; 36] = [
         34, 34, 27, 4, 8, 28, 59, 4, 6, 10, 54, 3, 44, 62, 38, 9, 42, 71, 33, 80, 26, 60, 55, 31,
@@ -45,4 +45,6 @@ fn test_transform_payload_xor() {
         String::from_utf8(result).expect("error transforming result to string");
 
     assert_eq!(str_result, expected);
+
+    Ok(())
 }
