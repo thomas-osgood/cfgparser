@@ -13,6 +13,21 @@ const UPPER_Z: u8 = b'Z' + 1;
 /// lower or visa versa.
 const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ViginerCipherError {
+    InvalidKey,
+}
+
+impl std::fmt::Display for ViginerCipherError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ViginerCipherError::InvalidKey => write!(f, "invalid key passed in."),
+        }
+    }
+}
+
+impl std::error::Error for ViginerCipherError {}
+
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 /// struct designed to implement encrypt and decrypt for a Viginere cipher.
 pub struct ViginereCipher {
