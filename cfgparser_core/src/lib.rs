@@ -67,11 +67,11 @@ pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn st
 
 /// helper function deisgned to take a key passed in as a C string
 /// and convert it to a byte array.
-fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> &[u8] {
+fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     if raw_key.is_null() {
-        return "q".as_bytes();
+        return "q".as_bytes().to_vec();
     }
 
     // convert the input to a CStr.
@@ -82,7 +82,7 @@ fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> &[u8] {
 
     // convert the CStr holding the key to bytes, then a Vec
     // and return it.
-    key_cstr.to_bytes()
+    key_cstr.to_bytes().to_vec()
 }
 
 /// helper function designed to format the C2 address held in the configuration
@@ -289,7 +289,7 @@ pub extern "C" fn read_cfg_with_encryption_o(
 ) -> *const std::ffi::c_char {
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
-    let key: &[u8] = convert_key_from_c(&raw_key);
+    let key: Vec<u8> = convert_key_from_c(&raw_key);
 
     // attempt to convert the user input into a rust i32 var.
     //
@@ -311,7 +311,7 @@ pub extern "C" fn read_cfg_with_encryption_o(
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(key, enc_type_i32) {
+    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(&key, enc_type_i32) {
         Ok(decryptor) => decryptor,
         Err(_) => return std::ptr::null(),
     };
@@ -424,7 +424,7 @@ pub extern "C" fn read_cfg_from_file_with_encryption_o(
 
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
-    let key: &[u8] = convert_key_from_c(&raw_key);
+    let key: Vec<u8> = convert_key_from_c(&raw_key);
 
     // attempt to convert the user input into a rust i32 var.
     //
@@ -446,7 +446,7 @@ pub extern "C" fn read_cfg_from_file_with_encryption_o(
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(key, enc_type_i32) {
+    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(&key, enc_type_i32) {
         Ok(decryptor) => decryptor,
         Err(_) => return std::ptr::null(),
     };
