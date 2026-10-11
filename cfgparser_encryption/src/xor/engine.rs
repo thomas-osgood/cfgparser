@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -18,7 +20,7 @@ impl std::fmt::Display for XORCipherError {
 
 impl std::error::Error for XORCipherError {}
 
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 /// struct designed to implement Decrypt and Encrypt for an XOR cipher.
 pub struct XORCipher {
     key: Vec<u8>,
