@@ -16,12 +16,14 @@ const LOWER_TO_UPPER_DIFF: u8 = LOWER_A - UPPER_A;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ViginerCipherError {
     InvalidKey,
+    NoKey,
 }
 
 impl std::fmt::Display for ViginerCipherError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ViginerCipherError::InvalidKey => write!(f, "invalid key passed in."),
+            ViginerCipherError::NoKey => write!(f, "no key specified"),
         }
     }
 }
@@ -56,9 +58,9 @@ pub fn is_valid_key(key: &[u8]) -> bool {
 }
 
 impl ViginereCipher {
-    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, ViginerCipherError> {
         if !is_valid_key(&key) {
-            return Err("invalid key passed in".into());
+            return Err(ViginerCipherError::InvalidKey);
         }
         Ok(ViginereCipher { key })
     }
@@ -75,10 +77,10 @@ impl<'build_life> ViginereCipherBuilder<'build_life> {
         self
     }
 
-    pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
+    pub fn build(self) -> Result<ViginereCipher, ViginerCipherError> {
         let key: &[u8] = match self.key {
             Some(k) => k,
-            None => return Err("no key specified".into()),
+            None => return Err(ViginerCipherError::NoKey),
         };
 
         ViginereCipher::new(key.to_vec())
@@ -86,11 +88,13 @@ impl<'build_life> ViginereCipherBuilder<'build_life> {
 }
 
 impl crate::Decryptor for ViginereCipher {
+    type Error = ViginerCipherError;
+
     /// function designed to implement a viginere cipher.
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         // let mut plaintext: Vec<u8> = vec![];
         let len_key = self.key.len();
         let rev: bool = true;
@@ -118,11 +122,13 @@ impl crate::Decryptor for ViginereCipher {
 }
 
 impl crate::Encryptor for ViginereCipher {
+    type Error = ViginerCipherError;
+
     /// function designed to implement a viginere cipher.
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         let len_key = self.key.len();
         let rev: bool = false;
 

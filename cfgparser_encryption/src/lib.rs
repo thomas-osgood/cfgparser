@@ -21,23 +21,27 @@ pub enum EncryptionType {
 /// generic trait designed to describe a structure that can decrypt
 /// ciphertext during a configuration extraction.
 pub trait Decryptor {
+    type Error: std::error::Error;
+
     /// function designed to take in a ciphertext vector, manipulate
     /// it and return a plaintext vector.
     ///
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (ciphertext in, plaintext out)
     /// should be consistent.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }
 
 /// generic trait designed to describe a structure that can decrypt
 /// ciphertext during a configuration extraction.
 pub trait Encryptor {
+    type Error: std::error::Error;
+
     /// function designed to take in a plaintext vector, manipulate
     /// it and return a ciphertext vector.
     ///
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (plaintext in, ciphertext out)
     /// should be consistent.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error>;
 }

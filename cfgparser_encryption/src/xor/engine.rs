@@ -55,21 +55,25 @@ impl XORCipher {
 }
 
 impl crate::Decryptor for XORCipher {
+    type Error = XORCipherError;
+
     /// implementation of the Decryptor trait for XORCipher.
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in ciphertext and the XORCipher's key.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         Ok(encrypt_decrypt(self.key.clone(), ciphertext))
     }
 }
 
 impl crate::Encryptor for XORCipher {
+    type Error = XORCipherError;
+
     /// implementation of the Encryptor trait for XORCipher.
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in plaintext and the XORCipher's key.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         Ok(encrypt_decrypt(self.key.clone(), plaintext))
     }
 }

@@ -6,6 +6,7 @@ mod unit_tests;
 #[derive(Debug, PartialEq, Eq)]
 pub enum AESError {
     EmptyKey,
+    Generic(String),
     KeyLength(String),
 }
 
@@ -13,6 +14,7 @@ impl std::fmt::Display for AESError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             AESError::EmptyKey => write!(f, "{}", ERR_NO_KEY),
+            AESError::Generic(s) => write!(f, "{}", s),
             AESError::KeyLength(s) => write!(f, "{}", s),
         }
     }
@@ -92,7 +94,9 @@ impl AESCipher {
 }
 
 impl crate::Decryptor for AESCipher {
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    type Error = AESError;
+
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
 
@@ -112,13 +116,15 @@ impl crate::Decryptor for AESCipher {
 
         match aescipher.decrypt(nonce, cipherbytes) {
             Ok(plaintext) => Ok(plaintext),
-            Err(e) => Err(e.to_string().into()),
+            Err(e) => Err(AESError::Generic(e.to_string())),
         }
     }
 }
 
 impl crate::Encryptor for AESCipher {
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    type Error = AESError;
+
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
         let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
             aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
 
@@ -138,7 +144,7 @@ impl crate::Encryptor for AESCipher {
                 ciphertext.extend_from_slice(&enc_result);
                 Ok(ciphertext)
             }
-            Err(e) => Err(e.to_string().into()),
+            Err(e) => Err(AESError::Generic(e.to_string())),
         }
     }
 }
