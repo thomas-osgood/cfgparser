@@ -81,7 +81,6 @@ impl crate::Decryptor for ViginereCipher {
     /// in the plaintext using the associated key character.
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         // let mut plaintext: Vec<u8> = vec![];
-        let mut key_pos: usize = 0;
         let len_key = self.key.len();
         let rev: bool = true;
 
@@ -95,14 +94,15 @@ impl crate::Decryptor for ViginereCipher {
         let plaintext: Vec<u8> = ciphertext
             .iter()
             .enumerate()
-            .map(|(_, &current)| {
-                let new: u8 = rotate(current, self.key[key_pos % len_key], rev);
+            .scan(0, |key_pos, (_, &current)| {
+                let key_char: u8 = self.key[*key_pos % len_key];
+                let rotated: u8 = rotate(current, key_char, rev);
 
                 if is_letter(current) {
-                    key_pos += 1;
+                    *key_pos += 1;
                 }
 
-                return new;
+                Some(rotated)
             })
             .collect();
 
@@ -116,7 +116,6 @@ impl crate::Encryptor for ViginereCipher {
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
     fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let mut key_pos: usize = 0;
         let len_key = self.key.len();
         let rev: bool = false;
 
@@ -130,14 +129,15 @@ impl crate::Encryptor for ViginereCipher {
         let ciphertext: Vec<u8> = plaintext
             .iter()
             .enumerate()
-            .map(|(_, &current)| {
-                let new = rotate(current, self.key[key_pos % len_key], rev);
+            .scan(0, |key_pos, (_, &current)| {
+                let key_char: u8 = self.key[*key_pos % len_key];
+                let rotated = rotate(current, key_char, rev);
 
                 if is_letter(current) {
-                    key_pos += 1;
+                    *key_pos += 1;
                 }
 
-                return new;
+                Some(rotated)
             })
             .collect();
 
