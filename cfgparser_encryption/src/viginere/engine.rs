@@ -98,7 +98,7 @@ impl crate::Decryptor for ViginereCipher {
             })
             .collect();
 
-        return Ok(plaintext);
+        Ok(plaintext)
     }
 }
 
@@ -129,7 +129,7 @@ impl crate::Encryptor for ViginereCipher {
             })
             .collect();
 
-        return Ok(ciphertext);
+        Ok(ciphertext)
     }
 }
 
