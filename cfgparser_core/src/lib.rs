@@ -105,6 +105,44 @@ fn format_address_c(configuration: models::core::Configuration) -> *const std::f
     address_cstring.into_raw()
 }
 
+/// helper function designed to build and return a decryptor
+/// based on a key and encryption type passed in.
+fn get_decryptor(
+    key: &[u8],
+    enc_type_i32: i32,
+) -> Result<cfgparser_encryption::DynamicCipher, Box<dyn std::error::Error>> {
+    // create the decryptor based on the user's input. this will compare
+    // the int with the enum to determine what kind of decryptor to create.
+    //
+    // if an invalid int is passed in, or an error occurs, an error is returned.
+    let decryptor: cfgparser_encryption::DynamicCipher = match enc_type_i32 {
+        xor if xor == cfgparser_encryption::EncryptionType::Xor as i32 => {
+            let cipher: cfgparser_encryption::xor::engine::XORCipher =
+                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
+            cfgparser_encryption::DynamicCipher::XOR(cipher)
+        }
+        vig if vig == cfgparser_encryption::EncryptionType::Viginere as i32 => {
+            let cipher: cfgparser_encryption::viginere::engine::ViginereCipher =
+                match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
+                    Ok(cipher) => cipher,
+                    Err(e) => return Err(e.into()),
+                };
+            cfgparser_encryption::DynamicCipher::Viginere(cipher)
+        }
+        aes if aes == cfgparser_encryption::EncryptionType::Aes as i32 => {
+            let cipher: cfgparser_encryption::aes::engine::AESCipher =
+                match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
+                    Ok(cipher) => cipher,
+                    Err(e) => return Err(e.into()),
+                };
+            cfgparser_encryption::DynamicCipher::AES(cipher)
+        }
+        _ => return Err("unknown encryption type specified".into()),
+    };
+
+    Ok(decryptor)
+}
+
 /// function designed to run through the process of extracting,
 /// transforming and deserializing configuration data from the
 /// current binary.
@@ -273,29 +311,9 @@ pub extern "C" fn read_cfg_with_encryption_o(
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match enc_type_i32 {
-        xor if xor == cfgparser_encryption::EncryptionType::Xor as i32 => {
-            let cipher: cfgparser_encryption::xor::engine::XORCipher =
-                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
-            cfgparser_encryption::DynamicCipher::XOR(cipher)
-        }
-        vig if vig == cfgparser_encryption::EncryptionType::Viginere as i32 => {
-            let cipher: cfgparser_encryption::viginere::engine::ViginereCipher =
-                match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(_) => return std::ptr::null(),
-                };
-            cfgparser_encryption::DynamicCipher::Viginere(cipher)
-        }
-        aes if aes == cfgparser_encryption::EncryptionType::Aes as i32 => {
-            let cipher: cfgparser_encryption::aes::engine::AESCipher =
-                match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(_) => return std::ptr::null(),
-                };
-            cfgparser_encryption::DynamicCipher::AES(cipher)
-        }
-        _ => return std::ptr::null(),
+    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(key, enc_type_i32) {
+        Ok(decryptor) => decryptor,
+        Err(_) => return std::ptr::null(),
     };
 
     let read_result: CfgResult = read_self(decryptor, offset);
@@ -428,29 +446,9 @@ pub extern "C" fn read_cfg_from_file_with_encryption_o(
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match enc_type_i32 {
-        xor if xor == cfgparser_encryption::EncryptionType::Xor as i32 => {
-            let cipher: cfgparser_encryption::xor::engine::XORCipher =
-                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec());
-            cfgparser_encryption::DynamicCipher::XOR(cipher)
-        }
-        vig if vig == cfgparser_encryption::EncryptionType::Viginere as i32 => {
-            let cipher: cfgparser_encryption::viginere::engine::ViginereCipher =
-                match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(_) => return std::ptr::null(),
-                };
-            cfgparser_encryption::DynamicCipher::Viginere(cipher)
-        }
-        aes if aes == cfgparser_encryption::EncryptionType::Aes as i32 => {
-            let cipher: cfgparser_encryption::aes::engine::AESCipher =
-                match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(_) => return std::ptr::null(),
-                };
-            cfgparser_encryption::DynamicCipher::AES(cipher)
-        }
-        _ => return std::ptr::null(),
+    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(key, enc_type_i32) {
+        Ok(decryptor) => decryptor,
+        Err(_) => return std::ptr::null(),
     };
 
     let read_result: CfgResult = read_from_file(filename.to_string(), decryptor, offset);
