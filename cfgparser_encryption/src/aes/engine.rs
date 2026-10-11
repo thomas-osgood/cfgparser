@@ -66,10 +66,7 @@ impl<'build_life> AESCipherBuilder<'build_life> {
     /// an AESCipher.
     pub fn build(self) -> Result<AESCipher, AESError> {
         let key: &[u8] = match self.key {
-            Some(key) => {
-                let _ = validate_key(key)?;
-                key
-            }
+            Some(key) => key,
             None => return Err(AESError::EmptyKey),
         };
 
