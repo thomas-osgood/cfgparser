@@ -3,12 +3,14 @@ mod unit_tests;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum XORCipherError {
+    EmptyKey,
     InvalidKey,
 }
 
 impl std::fmt::Display for XORCipherError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            XORCipherError::EmptyKey => write!(f, "empty key passed in"),
             XORCipherError::InvalidKey => write!(f, "invalid key passed in"),
         }
     }
