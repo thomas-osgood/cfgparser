@@ -1,6 +1,21 @@
 #[cfg(test)]
 mod unit_tests;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum XORCipherError {
+    InvalidKey,
+}
+
+impl std::fmt::Display for XORCipherError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            XORCipherError::InvalidKey => write!(f, "invalid key passed in"),
+        }
+    }
+}
+
+impl std::error::Error for XORCipherError {}
+
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 /// struct designed to implement Decrypt and Encrypt for an XOR cipher.
 pub struct XORCipher {
