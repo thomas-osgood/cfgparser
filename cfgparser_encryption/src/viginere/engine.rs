@@ -20,8 +20,8 @@ pub struct ViginereCipher {
 }
 
 #[derive(Debug, Default)]
-pub struct ViginereCipherBuilder<'a> {
-    key: Option<&'a [u8]>,
+pub struct ViginereCipherBuilder<'build_life> {
+    key: Option<&'build_life [u8]>,
 }
 
 /// function designed to take in a key and determine whether it

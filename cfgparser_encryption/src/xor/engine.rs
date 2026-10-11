@@ -8,8 +8,8 @@ pub struct XORCipher {
 }
 
 #[derive(Debug, Default)]
-pub struct XORCipherBuilder<'a> {
-    key: Option<&'a [u8]>,
+pub struct XORCipherBuilder<'build_life> {
+    key: Option<&'build_life [u8]>,
 }
 
 impl<'build_life> XORCipherBuilder<'build_life> {
