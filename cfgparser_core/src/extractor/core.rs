@@ -105,10 +105,10 @@ impl BytesExtractor {
         BytesExtractor { stream }
     }
 
-    /// function designed to return a clone of the vector that
-    /// is being held in the stream variable.
-    pub fn get_stream(&self) -> Vec<u8> {
-        self.stream.clone()
+    /// function designed to return the data being held
+    /// in the extractor's stream vector.
+    pub fn get_stream(&self) -> &[u8] {
+        &self.stream
     }
 
     /// function designed to overwrite the ByteExtractor's
@@ -120,7 +120,7 @@ impl BytesExtractor {
 
 impl CfgExtractor for BytesExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
-        let stream: std::io::Cursor<&Vec<u8>> = std::io::Cursor::new(&self.stream);
+        let stream: std::io::Cursor<&[u8]> = std::io::Cursor::new(&self.stream);
         read_bytes(stream, offset)
     }
 }
