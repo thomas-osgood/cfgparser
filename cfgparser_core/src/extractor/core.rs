@@ -77,18 +77,20 @@ impl CfgExtractor for SelfExtractor {
 /// struct designed to extract configuration bytes from a
 /// given file.
 pub struct FileExtractor {
-    pub filename: String,
+    pub path: std::path::PathBuf,
 }
 
 impl FileExtractor {
-    pub fn new(filename: String) -> FileExtractor {
-        FileExtractor { filename }
+    pub fn new<P: AsRef<std::path::Path>>(path: P) -> Self {
+        FileExtractor {
+            path: path.as_ref().to_path_buf(),
+        }
     }
 }
 
 impl CfgExtractor for FileExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
-        let fptr: std::fs::File = std::fs::File::open(&self.filename)?;
+        let fptr: std::fs::File = std::fs::File::open(&self.path)?;
         read_bytes(fptr, offset)
     }
 }
