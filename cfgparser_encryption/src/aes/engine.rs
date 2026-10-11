@@ -9,14 +9,16 @@ pub enum AESError {
     KeyLength(String),
 }
 
-impl ToString for AESError {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for AESError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AESError::EmptyKey => ERR_NO_KEY.to_string(),
-            AESError::KeyLength(s) => s.to_string(),
+            AESError::EmptyKey => write!(f, "{}", ERR_NO_KEY),
+            AESError::KeyLength(s) => write!(f, "{}", s),
         }
     }
 }
+
+impl std::error::Error for AESError {}
 
 const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
 const ERR_NO_KEY: &str = "no key specified";
