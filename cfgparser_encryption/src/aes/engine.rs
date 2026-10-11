@@ -25,8 +25,11 @@ impl std::error::Error for AESError {}
 
 const ERR_KEY_LEN: &str = "invalid key length. must be 16, 24 or 32 bytes";
 const ERR_NO_KEY: &str = "no key specified";
-const ERR_128: &str = "AES-128 is not currently supported";
 const ERR_192: &str = "AES-192 is not currently supported";
+
+const KEYLEN_128: usize = 16;
+const KEYLEN_192: usize = 24;
+const KEYLEN_256: usize = 32;
 
 /// expected size of the nonce when decrypting.
 pub const NONCE_SIZE: usize = 12;
@@ -42,7 +45,7 @@ pub struct AESCipherBuilder<'build_life> {
 
 /// function designed to check whether a given AES key is valid.
 fn validate_key(key: &[u8]) -> Result<(), AESError> {
-    let valid_lengths: &[usize] = &[16, 24, 32];
+    let valid_lengths: &[usize] = &[KEYLEN_128, KEYLEN_192, KEYLEN_256];
     let key_size: usize = key.len();
 
     if !valid_lengths.contains(&key_size) {
@@ -50,8 +53,7 @@ fn validate_key(key: &[u8]) -> Result<(), AESError> {
     }
 
     match key_size {
-        16 => Err(AESError::KeyLength(ERR_128.to_string())),
-        24 => Err(AESError::KeyLength(ERR_192.to_string())),
+        KEYLEN_192 => Err(AESError::KeyLength(ERR_192.to_string())),
         _ => Ok(()),
     }
 }
@@ -101,9 +103,6 @@ impl crate::Decryptor for AESCipher {
     type Error = AESError;
 
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
-        let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
-            aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
-
         // split the encrypted data into nonce and cipherbytes. this
         // will extract the nonce that will be used to decrypt the data
         // and the cipherbytes that will be decrypted.
@@ -116,9 +115,23 @@ impl crate::Decryptor for AESCipher {
         // encrypted data above.
         let nonce = aes_gcm::Nonce::from_slice(nonce_arr);
 
-        let aescipher = aes_gcm::Aes256Gcm::new(key);
+        let decrypt_result = match self.key.len() {
+            KEYLEN_128 => {
+                let key: &aes_gcm::Key<aes_gcm::Aes128Gcm> =
+                    aes_gcm::Key::<aes_gcm::Aes128Gcm>::from_slice(&self.key);
+                let aescipher = aes_gcm::Aes128Gcm::new(key);
+                aescipher.decrypt(nonce, cipherbytes)
+            }
+            KEYLEN_256 => {
+                let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
+                    aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
+                let aescipher = aes_gcm::Aes256Gcm::new(key);
+                aescipher.decrypt(nonce, cipherbytes)
+            }
+            _ => return Err(AESError::KeyLength(ERR_KEY_LEN.to_string())),
+        };
 
-        match aescipher.decrypt(nonce, cipherbytes) {
+        match decrypt_result {
             Ok(plaintext) => Ok(plaintext),
             Err(e) => Err(AESError::Generic(e.to_string())),
         }
@@ -129,22 +142,39 @@ impl crate::Encryptor for AESCipher {
     type Error = AESError;
 
     fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
-        let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
-            aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
+        let mut ciphertext: Vec<u8>;
+        let encrypt_result = match self.key.len() {
+            KEYLEN_128 => {
+                let key: &aes_gcm::Key<aes_gcm::Aes128Gcm> =
+                    aes_gcm::Key::<aes_gcm::Aes128Gcm>::from_slice(&self.key);
+                // generate a random, 12 byte nonce to use during encryption.
+                let nonce = aes_gcm::Aes128Gcm::generate_nonce(&mut aes_gcm::aead::OsRng);
+                // create a new AES cipher object using the encryption key.
+                let aescipher = aes_gcm::Aes128Gcm::new(key);
 
-        // generate a random, 12 byte nonce to use during encryption.
-        let nonce = aes_gcm::Aes256Gcm::generate_nonce(&mut aes_gcm::aead::OsRng);
+                ciphertext = nonce.to_vec();
+                aescipher.encrypt(&nonce, plaintext)
+            }
+            KEYLEN_256 => {
+                let key: &aes_gcm::Key<aes_gcm::Aes256Gcm> =
+                    aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(&self.key);
+                // generate a random, 12 byte nonce to use during encryption.
+                let nonce = aes_gcm::Aes256Gcm::generate_nonce(&mut aes_gcm::aead::OsRng);
+                // create a new AES cipher object using the encryption key.
+                let aescipher = aes_gcm::Aes256Gcm::new(key);
 
-        // create a new AES cipher object using the encryption key.
-        let aescipher = aes_gcm::Aes256Gcm::new(key);
+                ciphertext = nonce.to_vec();
+                aescipher.encrypt(&nonce, plaintext)
+            }
+            _ => return Err(AESError::KeyLength(ERR_KEY_LEN.to_string())),
+        };
 
-        match aescipher.encrypt(&nonce, plaintext) {
+        match encrypt_result {
             Ok(enc_result) => {
                 // return a slice with the first 12 bytes being the
                 // nonce and the remaining bytes being the encrypted
                 // message. this allows the receiver to extract the
                 // nonce from the message during decryption.
-                let mut ciphertext: Vec<u8> = nonce.to_vec();
                 ciphertext.extend_from_slice(&enc_result);
                 Ok(ciphertext)
             }
