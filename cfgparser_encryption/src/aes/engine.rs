@@ -1,4 +1,5 @@
 use aes_gcm::aead::{Aead, AeadCore, KeyInit};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(test)]
 mod unit_tests;
@@ -30,7 +31,7 @@ const ERR_192: &str = "AES-192 is not currently supported";
 /// expected size of the nonce when decrypting.
 pub const NONCE_SIZE: usize = 12;
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Zeroize, ZeroizeOnDrop)]
 pub struct AESCipher {
     key: Vec<u8>,
 }
@@ -88,6 +89,9 @@ impl AESCipher {
     /// and decryption by the AESCipher.
     pub fn update_key(&mut self, key: Vec<u8>) -> Result<(), AESError> {
         validate_key(&key)?;
+        // zero out the old key data before update for
+        // security best practices.
+        self.key.zeroize();
         self.key = key;
         Ok(())
     }
