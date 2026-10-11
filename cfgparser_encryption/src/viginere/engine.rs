@@ -42,8 +42,8 @@ pub fn is_valid_key(key: &[u8]) -> bool {
 
 impl ViginereCipher {
     pub fn new(key: Vec<u8>) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
-        if key.len() < 1 {
-            return Err("key must be of non-zero length".into());
+        if !is_valid_key(&key) {
+            return Err("invalid key passed in".into());
         }
         Ok(ViginereCipher { key })
     }
@@ -63,12 +63,8 @@ impl<'build_life> ViginereCipherBuilder<'build_life> {
     pub fn build(self) -> Result<ViginereCipher, Box<dyn std::error::Error>> {
         let key: &[u8] = match self.key {
             Some(k) => k,
-            None => return Err("no key sepcified".into()),
+            None => return Err("no key specified".into()),
         };
-
-        if !is_valid_key(&key) {
-            return Err("invalid key passed in".into());
-        }
 
         ViginereCipher::new(key.to_vec())
     }
@@ -83,10 +79,6 @@ impl crate::Decryptor for ViginereCipher {
         // let mut plaintext: Vec<u8> = vec![];
         let len_key = self.key.len();
         let rev: bool = true;
-
-        if !is_valid_key(&self.key) {
-            return Err("invalid key passed in".into());
-        }
 
         // go through each letter in the ciphertext and rotate it
         // by the inverse key value to convert it back to the
@@ -118,10 +110,6 @@ impl crate::Encryptor for ViginereCipher {
     fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let len_key = self.key.len();
         let rev: bool = false;
-
-        if !is_valid_key(&self.key) {
-            return Err("invalid key passed in".into());
-        }
 
         // go through each letter in the plaintext and rotate it
         // by the corresponding key value to generate the final
