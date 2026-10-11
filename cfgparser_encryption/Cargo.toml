@@ -7,8 +7,8 @@ edition = "2021"
 crate-type = ["lib"]
 
 [features]
-aes = ["dep:zeroize"]
+aes = []
 
 [dependencies]
 aes-gcm = "0.10.3"
-zeroize = { version = "1.9.1", features = ["derive"], optional = true }
+zeroize = { version = "1.9.1", features = ["derive"] }
