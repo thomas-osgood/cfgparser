@@ -25,7 +25,7 @@ impl Configuration {
 
 impl Default for Configuration {
     fn default() -> Self {
-        Configuration {
+        Self {
             host: "localhost".to_string(),
             port: 80,
             scheme: SchemeType::default(),
