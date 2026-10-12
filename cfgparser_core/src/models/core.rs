@@ -12,13 +12,13 @@ pub enum SchemeType {
 pub struct Configuration {
     pub host: String,
     #[serde(default = "default_port")]
-    pub port: i64,
+    pub port: u16,
     #[serde(default = "default_scheme")]
     pub scheme: SchemeType,
 }
 
 impl Configuration {
-    pub fn new(host: String, port: i64, scheme: SchemeType) -> Configuration {
+    pub fn new(host: String, port: u16, scheme: SchemeType) -> Configuration {
         Configuration { host, port, scheme }
     }
 }
@@ -49,7 +49,7 @@ impl std::fmt::Display for SchemeType {
 }
 
 /// default port for JSON deserialize if the field is not present.
-fn default_port() -> i64 {
+fn default_port() -> u16 {
     80
 }
 
