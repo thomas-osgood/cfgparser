@@ -19,11 +19,7 @@ pub struct Configuration {
 
 impl Configuration {
     pub fn new(host: String, port: i64, scheme: SchemeType) -> Configuration {
-        Configuration {
-            host: host,
-            port: port,
-            scheme: scheme,
-        }
+        Configuration { host, port, scheme }
     }
 }
 
