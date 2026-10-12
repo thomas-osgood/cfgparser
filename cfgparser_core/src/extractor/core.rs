@@ -20,6 +20,21 @@ pub trait CfgExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>>;
 }
 
+#[derive(Debug)]
+pub enum CfgExtractorError {
+    InvalidPayloadSize,
+}
+
+impl std::fmt::Display for CfgExtractorError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CfgExtractorError::InvalidPayloadSize => write!(f, "sz_payload must be >= 0"),
+        }
+    }
+}
+
+impl std::error::Error for CfgExtractorError {}
+
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
 /// either a Vec<u8> or an error.
@@ -42,6 +57,14 @@ where
 
     // convert the bytes read into i64.
     let sz_payload: i64 = i64::from_be_bytes(buf_sz);
+
+    // validate the sz_payload size is valid for a usize conversion.
+    if sz_payload < 0 {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::InvalidPayloadSize,
+        ));
+    }
 
     // calculate how far back to go from the end of the file
     // to reach the beginning byte of the config.
