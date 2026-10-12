@@ -121,26 +121,17 @@ fn get_decryptor(
     let decryptor: cfgparser_encryption::DynamicCipher = match enc_type {
         cfgparser_encryption::EncryptionType::Xor => {
             let cipher: cfgparser_encryption::xor::engine::XORCipher =
-                match cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::XOR(cipher)
         }
         cfgparser_encryption::EncryptionType::Viginere => {
             let cipher: cfgparser_encryption::viginere::engine::ViginereCipher =
-                match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::Viginere(cipher)
         }
         cfgparser_encryption::EncryptionType::Aes => {
             let cipher: cfgparser_encryption::aes::engine::AESCipher =
-                match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::AES(cipher)
         }
     };
