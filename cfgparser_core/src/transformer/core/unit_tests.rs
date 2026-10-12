@@ -16,10 +16,8 @@ fn test_deserialize_payload() {
     let deserialized: crate::models::core::Configuration =
         deserialize_payload(serialized).expect("error deserializing payload");
 
-    let is_equal: bool =
-        (deserialized.host == expected.host) && (deserialized.port == expected.port);
-
-    assert_eq!(is_equal, true);
+    assert_eq!(deserialized.host, expected.host);
+    assert_eq!(deserialized.port, expected.port);
 }
 
 #[test]
