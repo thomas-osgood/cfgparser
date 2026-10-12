@@ -108,7 +108,7 @@ pub struct FileExtractor {
 impl FileExtractor {
     pub fn new<P: AsRef<std::path::Path>>(path: P) -> Self {
         FileExtractor {
-            path: path.as_ref().to_path_buf(),
+            path: path.as_ref().into(),
         }
     }
 }
