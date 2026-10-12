@@ -26,3 +26,9 @@ fn test_configuration_deserialize_default() {
 
     assert_eq!(result, expected);
 }
+
+#[test]
+fn test_scheme_type_display() {
+    assert_eq!(SchemeType::HTTP.to_string(), "http");
+    assert_eq!(SchemeType::HTTPS.to_string(), "https");
+}
