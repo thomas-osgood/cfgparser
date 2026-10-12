@@ -86,6 +86,7 @@ where
 
 /// struct designed to extract configuration bytes from the
 /// current binary. this implements the CfgExtractor trait.
+#[derive(Debug, Clone, Copy, Default)]
 pub struct SelfExtractor;
 impl CfgExtractor for SelfExtractor {
     /// function designed to extract the configuration
