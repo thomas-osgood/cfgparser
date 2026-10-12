@@ -43,11 +43,11 @@ impl Default for SchemeType {
     }
 }
 
-impl ToString for SchemeType {
-    fn to_string(&self) -> String {
-        match *self {
-            SchemeType::HTTP => "http".to_string(),
-            SchemeType::HTTPS => "https".to_string(),
+impl std::fmt::Display for SchemeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SchemeType::HTTP => write!(f, "http"),
+            SchemeType::HTTPS => write!(f, "https"),
         }
     }
 }
