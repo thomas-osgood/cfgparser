@@ -13,7 +13,7 @@ pub struct Configuration {
     pub host: String,
     #[serde(default = "default_port")]
     pub port: u16,
-    #[serde(default = "default_scheme")]
+    #[serde(default)]
     pub scheme: SchemeType,
 }
 
@@ -51,9 +51,4 @@ impl std::fmt::Display for SchemeType {
 /// default port for JSON deserialize if the field is not present.
 fn default_port() -> u16 {
     80
-}
-
-/// default scheme for JSON deserialize if the field is not present.
-fn default_scheme() -> SchemeType {
-    SchemeType::default()
 }
