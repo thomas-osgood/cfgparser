@@ -65,6 +65,12 @@ mod unit_tests;
 /// custom type defining the standard return for the rust read functions.
 pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn std::error::Error>>;
 
+struct FfiParams {
+    key: Vec<u8>,
+    enc_type_i32: i32,
+    offset: usize,
+}
+
 /// helper function deisgned to take a key passed in as a C string
 /// and convert it to a byte array.
 fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
@@ -137,6 +143,25 @@ fn get_decryptor(
     };
 
     Ok(decryptor)
+}
+
+/// helper function designed to consolidate the parsing logic
+/// of the FFI parameters.
+fn parse_common_ffi_params(
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+    raw_offset: std::ffi::c_uint,
+) -> Option<FfiParams> {
+    let key: Vec<u8> = convert_key_from_c(&raw_key);
+
+    let enc_type_i32: i32 = enc_type.try_into().ok()?;
+    let offset: usize = raw_offset.try_into().ok()?;
+
+    Some(FfiParams {
+        key,
+        enc_type_i32,
+        offset,
+    })
 }
 
 /// function designed to run through the process of extracting,
