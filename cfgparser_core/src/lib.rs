@@ -90,9 +90,7 @@ fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
 fn format_address_c(configuration: models::core::Configuration) -> *const std::ffi::c_char {
     let address: String = format!(
         "{}://{}:{}",
-        configuration.scheme.to_string(),
-        configuration.host,
-        configuration.port
+        configuration.scheme, configuration.host, configuration.port
     );
 
     // convert the String (rust) into a CString so it can be converted
