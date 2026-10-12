@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod unit_tests;
 
+const ERR_INVALID_PAYLOAD_SIZE: &str = "sz_payload must be >= 0";
+
 /// constant representing a value of no offset.
 ///
 /// this will inidicate to read from the end of
@@ -28,7 +30,7 @@ pub enum CfgExtractorError {
 impl std::fmt::Display for CfgExtractorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CfgExtractorError::InvalidPayloadSize => write!(f, "sz_payload must be >= 0"),
+            CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
         }
     }
 }
