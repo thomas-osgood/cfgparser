@@ -2,6 +2,7 @@
 mod unit_tests;
 
 const ERR_INVALID_PAYLOAD_SIZE: &str = "sz_payload must be >= 0";
+const ERR_OFFSET_TOO_LARGE: &str = "the offset exceeds the maximum allowed size for this reader";
 
 /// constant representing a value of no offset.
 ///
@@ -25,12 +26,14 @@ pub trait CfgExtractor {
 #[derive(Debug)]
 pub enum CfgExtractorError {
     InvalidPayloadSize,
+    OffsetTooLarge,
 }
 
 impl std::fmt::Display for CfgExtractorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
+            CfgExtractorError::OffsetTooLarge => write!(f, "{}", ERR_OFFSET_TOO_LARGE),
         }
     }
 }
