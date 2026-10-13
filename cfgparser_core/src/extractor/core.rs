@@ -112,6 +112,30 @@ pub struct FileExtractor {
     path: std::path::PathBuf,
 }
 
+pub struct FileExtractorBuilder {
+    path: Option<std::path::PathBuf>,
+}
+
+impl FileExtractorBuilder {
+    pub fn new() -> Self {
+        Self { path: None }
+    }
+
+    pub fn with_path<P: AsRef<std::path::Path>>(mut self, path: P) -> Self {
+        self.path = Some(path.as_ref().into());
+        self
+    }
+
+    pub fn build(self) -> Result<FileExtractor, CfgExtractorError> {
+        let path: std::path::PathBuf = match self.path {
+            Some(path) => path,
+            None => return Err(CfgExtractorError::NoPayload),
+        };
+
+        Ok(FileExtractor { path })
+    }
+}
+
 impl FileExtractor {
     pub fn new<P: AsRef<std::path::Path>>(path: P) -> Self {
         FileExtractor {
