@@ -29,6 +29,7 @@ pub enum CfgExtractorError {
     InvalidPayloadSize,
     NoPayload,
     OffsetTooLarge,
+    Unknown(String),
 }
 
 impl std::fmt::Display for CfgExtractorError {
@@ -37,6 +38,7 @@ impl std::fmt::Display for CfgExtractorError {
             CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
             CfgExtractorError::NoPayload => write!(f, "{}", ERR_NO_PAYLOAD),
             CfgExtractorError::OffsetTooLarge => write!(f, "{}", ERR_OFFSET_TOO_LARGE),
+            CfgExtractorError::Unknown(msg) => write!(f, "Unknown Extraction Error: {}", msg),
         }
     }
 }
