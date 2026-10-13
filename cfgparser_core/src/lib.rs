@@ -65,6 +65,12 @@ mod unit_tests;
 /// custom type defining the standard return for the rust read functions.
 pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn std::error::Error>>;
 
+struct FfiParams {
+    key: Vec<u8>,
+    enc_type_i32: i32,
+    offset: usize,
+}
+
 /// helper function deisgned to take a key passed in as a C string
 /// and convert it to a byte array.
 fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
@@ -90,9 +96,7 @@ fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
 fn format_address_c(configuration: models::core::Configuration) -> *const std::ffi::c_char {
     let address: String = format!(
         "{}://{}:{}",
-        configuration.scheme.to_string(),
-        configuration.host,
-        configuration.port
+        configuration.scheme, configuration.host, configuration.port
     );
 
     // convert the String (rust) into a CString so it can be converted
@@ -111,39 +115,53 @@ fn get_decryptor(
     key: &[u8],
     enc_type_i32: i32,
 ) -> Result<cfgparser_encryption::DynamicCipher, Box<dyn std::error::Error>> {
+    // transform the i32 encryption type definition into a cfgparser_encryption
+    // encryption type to use for the match statement.
+    let enc_type: cfgparser_encryption::EncryptionType =
+        cfgparser_encryption::EncryptionType::try_from(enc_type_i32)?;
+
     // create the decryptor based on the user's input. this will compare
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, an error is returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match enc_type_i32 {
-        xor if xor == cfgparser_encryption::EncryptionType::Xor as i32 => {
+    let decryptor: cfgparser_encryption::DynamicCipher = match enc_type {
+        cfgparser_encryption::EncryptionType::Xor => {
             let cipher: cfgparser_encryption::xor::engine::XORCipher =
-                match cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::xor::engine::XORCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::XOR(cipher)
         }
-        vig if vig == cfgparser_encryption::EncryptionType::Viginere as i32 => {
+        cfgparser_encryption::EncryptionType::Viginere => {
             let cipher: cfgparser_encryption::viginere::engine::ViginereCipher =
-                match cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::viginere::engine::ViginereCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::Viginere(cipher)
         }
-        aes if aes == cfgparser_encryption::EncryptionType::Aes as i32 => {
+        cfgparser_encryption::EncryptionType::Aes => {
             let cipher: cfgparser_encryption::aes::engine::AESCipher =
-                match cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec()) {
-                    Ok(cipher) => cipher,
-                    Err(e) => return Err(e.into()),
-                };
+                cfgparser_encryption::aes::engine::AESCipher::new(key.to_vec())?;
             cfgparser_encryption::DynamicCipher::AES(cipher)
         }
-        _ => return Err("unknown encryption type specified".into()),
     };
 
     Ok(decryptor)
+}
+
+/// helper function designed to consolidate the parsing logic
+/// of the FFI parameters.
+fn parse_common_ffi_params(
+    raw_key: *const std::ffi::c_char,
+    enc_type: std::ffi::c_int,
+    raw_offset: std::ffi::c_uint,
+) -> Option<FfiParams> {
+    let key: Vec<u8> = convert_key_from_c(&raw_key);
+
+    let enc_type_i32: i32 = enc_type.try_into().ok()?;
+    let offset: usize = raw_offset.try_into().ok()?;
+
+    Some(FfiParams {
+        key,
+        enc_type_i32,
+        offset,
+    })
 }
 
 /// function designed to run through the process of extracting,
@@ -290,36 +308,25 @@ pub extern "C" fn read_cfg_with_encryption_o(
     enc_type: std::ffi::c_int,
     raw_offset: std::ffi::c_uint,
 ) -> *const std::ffi::c_char {
-    // if null is passed in as the key, use q as the default;
-    // otherwise use the char* key passed in.
-    let key: Vec<u8> = convert_key_from_c(&raw_key);
-
-    // attempt to convert the user input into a rust i32 var.
+    // transform teh C parameters and save the values in an FfiParams struct.
     //
-    // if this fails, NULL will be returned.
-    let enc_type_i32: i32 = match enc_type.try_into() {
-        Ok(int_val) => int_val,
-        Err(_) => return std::ptr::null(),
-    };
-
-    // attempt to convert the user input into a rust usize var.
-    //
-    // if this fails, NULL will be returned.
-    let offset: usize = match raw_offset.try_into() {
-        Ok(u_val) => u_val,
-        Err(_) => return std::ptr::null(),
+    // if the conversion fails, return null.
+    let converted_params: FfiParams = match parse_common_ffi_params(raw_key, enc_type, raw_offset) {
+        Some(converted) => converted,
+        None => return std::ptr::null(),
     };
 
     // create the decryptor based on the user's input. this will compare
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(&key, enc_type_i32) {
-        Ok(decryptor) => decryptor,
-        Err(_) => return std::ptr::null(),
-    };
+    let decryptor: cfgparser_encryption::DynamicCipher =
+        match get_decryptor(&converted_params.key, converted_params.enc_type_i32) {
+            Ok(decryptor) => decryptor,
+            Err(_) => return std::ptr::null(),
+        };
 
-    let read_result: CfgResult = read_self(decryptor, offset);
+    let read_result: CfgResult = read_self(decryptor, converted_params.offset);
 
     // read the Configuration from the current binary.
     let configuration: models::core::Configuration = match read_result {
@@ -425,36 +432,26 @@ pub extern "C" fn read_cfg_from_file_with_encryption_o(
         Err(_) => return std::ptr::null(),
     };
 
-    // if null is passed in as the key, use q as the default;
-    // otherwise use the char* key passed in.
-    let key: Vec<u8> = convert_key_from_c(&raw_key);
-
-    // attempt to convert the user input into a rust i32 var.
+    // transform teh C parameters and save the values in an FfiParams struct.
     //
-    // if this fails, NULL will be returned.
-    let enc_type_i32: i32 = match enc_type.try_into() {
-        Ok(int_val) => int_val,
-        Err(_) => return std::ptr::null(),
-    };
-
-    // attempt to convert the user input into a rust usize var.
-    //
-    // if this fails, NULL will be returned.
-    let offset: usize = match raw_offset.try_into() {
-        Ok(u_val) => u_val,
-        Err(_) => return std::ptr::null(),
+    // if the conversion fails, return null.
+    let converted_params: FfiParams = match parse_common_ffi_params(raw_key, enc_type, raw_offset) {
+        Some(converted) => converted,
+        None => return std::ptr::null(),
     };
 
     // create the decryptor based on the user's input. this will compare
     // the int with the enum to determine what kind of decryptor to create.
     //
     // if an invalid int is passed in, or an error occurs, NULL will be returned.
-    let decryptor: cfgparser_encryption::DynamicCipher = match get_decryptor(&key, enc_type_i32) {
-        Ok(decryptor) => decryptor,
-        Err(_) => return std::ptr::null(),
-    };
+    let decryptor: cfgparser_encryption::DynamicCipher =
+        match get_decryptor(&converted_params.key, converted_params.enc_type_i32) {
+            Ok(decryptor) => decryptor,
+            Err(_) => return std::ptr::null(),
+        };
 
-    let read_result: CfgResult = read_from_file(filename.to_string(), decryptor, offset);
+    let read_result: CfgResult =
+        read_from_file(filename.to_string(), decryptor, converted_params.offset);
 
     // read the Configuration from the current binary.
     let configuration: models::core::Configuration = match read_result {

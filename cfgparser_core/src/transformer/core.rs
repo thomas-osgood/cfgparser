@@ -10,10 +10,7 @@ mod unit_tests;
 pub fn deserialize_payload(
     payload: String,
 ) -> Result<crate::models::core::Configuration, serde_json::Error> {
-    match serde_json::from_str(&payload) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(e),
-    }
+    serde_json::from_str(&payload)
 }
 
 /// function designed to convert the raw bytes read from

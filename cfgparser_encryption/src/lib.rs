@@ -45,6 +45,34 @@ pub enum EncryptionType {
     Aes,
 }
 
+#[derive(Debug)]
+pub enum EncryptionTypeError {
+    UnknownType,
+}
+
+impl std::fmt::Display for EncryptionTypeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EncryptionTypeError::UnknownType => write!(f, "unknown encryption type"),
+        }
+    }
+}
+
+impl std::error::Error for EncryptionTypeError {}
+
+impl TryFrom<i32> for EncryptionType {
+    type Error = EncryptionTypeError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            aes if aes == EncryptionType::Aes as i32 => Ok(EncryptionType::Aes),
+            vig if vig == EncryptionType::Viginere as i32 => Ok(EncryptionType::Viginere),
+            xor if xor == EncryptionType::Xor as i32 => Ok(EncryptionType::Xor),
+            _ => Err(EncryptionTypeError::UnknownType),
+        }
+    }
+}
+
 /// generic trait designed to describe a structure that can decrypt
 /// ciphertext during a configuration extraction.
 pub trait Decryptor {

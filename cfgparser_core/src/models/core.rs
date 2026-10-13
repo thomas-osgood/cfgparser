@@ -12,24 +12,20 @@ pub enum SchemeType {
 pub struct Configuration {
     pub host: String,
     #[serde(default = "default_port")]
-    pub port: i64,
-    #[serde(default = "default_scheme")]
+    pub port: u16,
+    #[serde(default)]
     pub scheme: SchemeType,
 }
 
 impl Configuration {
-    pub fn new(host: String, port: i64, scheme: SchemeType) -> Configuration {
-        Configuration {
-            host: host,
-            port: port,
-            scheme: scheme,
-        }
+    pub fn new(host: String, port: u16, scheme: SchemeType) -> Self {
+        Self { host, port, scheme }
     }
 }
 
 impl Default for Configuration {
     fn default() -> Self {
-        Configuration {
+        Self {
             host: "localhost".to_string(),
             port: 80,
             scheme: SchemeType::default(),
@@ -43,21 +39,16 @@ impl Default for SchemeType {
     }
 }
 
-impl ToString for SchemeType {
-    fn to_string(&self) -> String {
-        match *self {
-            SchemeType::HTTP => "http".to_string(),
-            SchemeType::HTTPS => "https".to_string(),
+impl std::fmt::Display for SchemeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SchemeType::HTTP => write!(f, "http"),
+            SchemeType::HTTPS => write!(f, "https"),
         }
     }
 }
 
 /// default port for JSON deserialize if the field is not present.
-fn default_port() -> i64 {
+fn default_port() -> u16 {
     80
-}
-
-/// default scheme for JSON deserialize if the field is not present.
-fn default_scheme() -> SchemeType {
-    SchemeType::default()
 }
