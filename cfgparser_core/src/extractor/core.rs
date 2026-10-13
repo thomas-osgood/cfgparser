@@ -109,7 +109,7 @@ impl CfgExtractor for SelfExtractor {
 /// struct designed to extract configuration bytes from a
 /// given file.
 pub struct FileExtractor {
-    pub path: std::path::PathBuf,
+    path: std::path::PathBuf,
 }
 
 impl FileExtractor {
