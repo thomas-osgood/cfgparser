@@ -2,6 +2,7 @@
 mod unit_tests;
 
 const ERR_INVALID_PAYLOAD_SIZE: &str = "sz_payload must be >= 0";
+const ERR_NO_PAYLOAD: &str = "no payload specified for extractor";
 const ERR_OFFSET_TOO_LARGE: &str = "the offset exceeds the maximum allowed size for this reader";
 
 /// constant representing a value of no offset.
@@ -26,6 +27,7 @@ pub trait CfgExtractor {
 #[derive(Debug)]
 pub enum CfgExtractorError {
     InvalidPayloadSize,
+    NoPayload,
     OffsetTooLarge,
 }
 
@@ -33,6 +35,7 @@ impl std::fmt::Display for CfgExtractorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
+            CfgExtractorError::NoPayload => write!(f, "{}", ERR_NO_PAYLOAD),
             CfgExtractorError::OffsetTooLarge => write!(f, "{}", ERR_OFFSET_TOO_LARGE),
         }
     }
@@ -129,6 +132,32 @@ impl CfgExtractor for FileExtractor {
 /// a byte vector (`Vec<u8>`).
 pub struct BytesExtractor {
     stream: Vec<u8>,
+}
+
+pub struct BytesExtractorBuilder<'build_life> {
+    stream: Option<&'build_life [u8]>,
+}
+
+impl<'build_life> BytesExtractorBuilder<'build_life> {
+    pub fn new() -> Self {
+        Self { stream: None }
+    }
+
+    pub fn with_stream(mut self, stream: &'build_life [u8]) -> Self {
+        self.stream = Some(stream);
+        self
+    }
+
+    pub fn build(self) -> Result<BytesExtractor, CfgExtractorError> {
+        let stream: &[u8] = match self.stream {
+            Some(stream) => stream,
+            None => return Err(CfgExtractorError::NoPayload),
+        };
+
+        Ok(BytesExtractor {
+            stream: stream.to_vec(),
+        })
+    }
 }
 
 impl BytesExtractor {
