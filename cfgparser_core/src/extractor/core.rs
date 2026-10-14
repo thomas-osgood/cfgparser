@@ -22,6 +22,7 @@ const SZ_SIZEBUFF: usize = 8;
 /// the main implementation of this is in SelfExtractor.
 pub trait CfgExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>>;
+    fn len(self) -> std::io::Result<u64>;
 }
 
 #[derive(Debug)]
@@ -44,6 +45,17 @@ impl std::fmt::Display for CfgExtractorError {
 }
 
 impl std::error::Error for CfgExtractorError {}
+
+impl From<CfgExtractorError> for std::io::Error {
+    fn from(err: CfgExtractorError) -> Self {
+        let kind: std::io::ErrorKind = match err {
+            CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
+            _ => std::io::ErrorKind::Other,
+        };
+
+        std::io::Error::new(kind, err)
+    }
+}
 
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
@@ -105,6 +117,14 @@ impl CfgExtractor for SelfExtractor {
         // read and return the  bytes from the file.
         read_bytes(fptr, offset)
     }
+
+    /// function designed to return the size (in bytes)
+    /// of the current binary.
+    fn len(self) -> std::io::Result<u64> {
+        let current_binary: std::path::PathBuf = std::env::current_exe()?;
+        let metadata: std::fs::Metadata = std::fs::metadata(current_binary)?;
+        Ok(metadata.len())
+    }
 }
 
 #[derive(Debug, Default)]
@@ -150,6 +170,11 @@ impl CfgExtractor for FileExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>> {
         let fptr: std::fs::File = std::fs::File::open(&self.path)?;
         read_bytes(fptr, offset)
+    }
+
+    fn len(self) -> std::io::Result<u64> {
+        let metadata: std::fs::Metadata = std::fs::metadata(self.path)?;
+        Ok(metadata.len())
     }
 }
 
@@ -209,6 +234,15 @@ impl CfgExtractor for BytesExtractor {
         let stream: std::io::Cursor<&[u8]> = std::io::Cursor::new(&self.stream);
         read_bytes(stream, offset)
     }
+
+    fn len(self) -> std::io::Result<u64> {
+        let len: u64 = match self.stream.len().try_into() {
+            Ok(len) => len,
+            Err(e) => return Err(CfgExtractorError::Unknown(e.to_string()).into()),
+        };
+
+        Ok(len)
+    }
 }
 
 #[cfg(test)]
@@ -231,5 +265,20 @@ impl CfgExtractor for TestExtractor {
             13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
             46, 54, 39, 77,
         ])
+    }
+
+    fn len(self) -> std::io::Result<u64> {
+        let v1: Vec<u8> = vec![
+            22, 28, 41, 29, 7, 71, 61, 85, 42, 24, 10, 19, 58, 11, 45, 30, 60, 71, 57, 9, 7, 53,
+            13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
+            46, 54, 39, 77,
+        ];
+
+        let len: u64 = match v1.len().try_into() {
+            Ok(len) => len,
+            Err(e) => return Err(CfgExtractorError::Unknown(e.to_string()).into()),
+        };
+
+        Ok(len)
     }
 }
