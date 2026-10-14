@@ -84,7 +84,20 @@ where
 {
     validate_offset(&mut reader, offset)?;
 
-    let size_start: i64 = (offset + SZ_SIZEBUFF) as i64 * -1;
+    // Safely calculate the size bytes starting position using checked math
+    let combined_offset: usize = SZ_SIZEBUFF.checked_add(offset).ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::OffsetTooLarge,
+        )
+    })?;
+
+    let size_start: i64 = -i64::try_from(combined_offset).map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::OffsetTooLarge,
+        )
+    })?;
 
     // allocate buffer that will hold the size bytes.
     let mut buf_sz: [u8; SZ_SIZEBUFF] = [0; SZ_SIZEBUFF];
