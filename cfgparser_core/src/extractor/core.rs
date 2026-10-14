@@ -61,8 +61,7 @@ impl CfgExtractorError {
 
 impl From<CfgExtractorError> for std::io::Error {
     fn from(err: CfgExtractorError) -> Self {
-        let kind: std::io::ErrorKind = err.kind();
-        std::io::Error::new(kind, err)
+        std::io::Error::new(err.kind(), err)
     }
 }
 
