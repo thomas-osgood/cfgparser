@@ -128,7 +128,9 @@ where
     R: std::io::Read + std::io::Seek,
 {
     let reader_size: u64 = get_reader_size(&mut reader)?;
-    let total_size: usize = SZ_SIZEBUFF + offset;
+    let total_size: usize = SZ_SIZEBUFF
+        .checked_add(offset)
+        .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
     let difference: i64 = reader_size as i64 - total_size as i64;
     if difference < 1 {
         return Err(CfgExtractorError::OffsetTooLarge.into());
