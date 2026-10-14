@@ -48,10 +48,11 @@ impl std::error::Error for CfgExtractorError {}
 
 impl From<CfgExtractorError> for std::io::Error {
     fn from(err: CfgExtractorError) -> Self {
-        let kind: std::io::ErrorKind = match err {
+        let kind: std::io::ErrorKind = match &err {
             CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
-            CfgExtractorError::OffsetTooLarge => std::io::ErrorKind::InvalidData,
-            CfgExtractorError::InvalidPayloadSize => std::io::ErrorKind::InvalidData,
+            CfgExtractorError::OffsetTooLarge | CfgExtractorError::InvalidPayloadSize => {
+                std::io::ErrorKind::InvalidData
+            }
             _ => std::io::ErrorKind::Other,
         };
 
