@@ -214,6 +214,7 @@ pub struct FileExtractor {
     path: std::path::PathBuf,
 }
 
+#[derive(Debug, Default)]
 pub struct FileExtractorBuilder {
     path: Option<std::path::PathBuf>,
 }
