@@ -46,16 +46,22 @@ impl std::fmt::Display for CfgExtractorError {
 
 impl std::error::Error for CfgExtractorError {}
 
-impl From<CfgExtractorError> for std::io::Error {
-    fn from(err: CfgExtractorError) -> Self {
-        let kind: std::io::ErrorKind = match &err {
+impl CfgExtractorError {
+    /// Helper method to cleanly map errors to their corresponding io::ErrorKind
+    pub fn kind(&self) -> std::io::ErrorKind {
+        match self {
             CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
             CfgExtractorError::OffsetTooLarge | CfgExtractorError::InvalidPayloadSize => {
                 std::io::ErrorKind::InvalidData
             }
-            _ => std::io::ErrorKind::Other,
-        };
+            CfgExtractorError::NoPayload => std::io::ErrorKind::Other,
+        }
+    }
+}
 
+impl From<CfgExtractorError> for std::io::Error {
+    fn from(err: CfgExtractorError) -> Self {
+        let kind: std::io::ErrorKind = err.kind();
         std::io::Error::new(kind, err)
     }
 }
