@@ -51,6 +51,7 @@ impl From<CfgExtractorError> for std::io::Error {
         let kind: std::io::ErrorKind = match err {
             CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
             CfgExtractorError::OffsetTooLarge => std::io::ErrorKind::InvalidData,
+            CfgExtractorError::InvalidPayloadSize => std::io::ErrorKind::InvalidData,
             _ => std::io::ErrorKind::Other,
         };
 
