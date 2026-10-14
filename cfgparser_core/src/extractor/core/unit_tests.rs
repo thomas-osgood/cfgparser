@@ -117,3 +117,98 @@ fn test_bytesextractor_set_stream() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[test]
+fn test_bytesextractor_get_and_set_stream() {
+    let mut extractor: BytesExtractor = BytesExtractor::new(vec![]);
+    assert!(extractor.get_stream().is_empty());
+
+    let stream: Vec<u8> = vec![1, 2, 3, 4, 5];
+    extractor.set_stream(stream.clone());
+    assert_eq!(stream, extractor.get_stream());
+}
+
+#[test]
+fn test_builders_no_payload_error() {
+    let file_build_result = FileExtractorBuilder::new().build();
+    assert!(matches!(
+        file_build_result,
+        Err(CfgExtractorError::NoPayload)
+    ));
+
+    let bytes_build_result = BytesExtractorBuilder::new().build();
+    assert!(matches!(
+        bytes_build_result,
+        Err(CfgExtractorError::NoPayload)
+    ));
+}
+
+#[test]
+fn test_offset_too_large_error() {
+    // Reader too small for the requested offset + size buffer
+    let small_data = vec![1, 2, 3];
+    let cursor = std::io::Cursor::new(small_data);
+    let result = read_bytes(cursor, 10);
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let extractor_err: CfgExtractorError = CfgExtractorError::OffsetTooLarge;
+    assert_eq!(err.to_string(), extractor_err.to_string());
+}
+
+#[test]
+fn test_invalid_payload_size_error() {
+    // Construct data where the payload size bytes evaluate to a negative i64 (-1)
+    // 8 bytes at the end representing -1 (0xFFFFFFFFFFFFFFFF)
+    let mut malicious_data = vec![0u8; 20];
+    malicious_data.extend_from_slice(&(-1i64).to_be_bytes());
+
+    let cursor = std::io::Cursor::new(malicious_data);
+    let result = read_bytes(cursor, 0);
+    assert!(result.is_err());
+    assert!(matches!(
+        result
+            .unwrap_err()
+            .into_inner()
+            .and_then(|e| e.downcast::<CfgExtractorError>().ok()),
+        Some(_)
+    ));
+}
+
+#[test]
+fn test_error_display_and_conversions() {
+    let err_no_payload = CfgExtractorError::NoPayload;
+    assert!(!err_no_payload.to_string().is_empty());
+
+    let err_invalid = CfgExtractorError::InvalidPayloadSize;
+    assert!(!err_invalid.to_string().is_empty());
+
+    let err_offset = CfgExtractorError::OffsetTooLarge;
+    assert!(!err_offset.to_string().is_empty());
+
+    let err_unknown = CfgExtractorError::Unknown("test failure".into());
+    assert!(err_unknown.to_string().contains("test failure"));
+
+    let io_err: std::io::Error = CfgExtractorError::Unknown("fail".into()).into();
+    assert_eq!(io_err.kind(), std::io::ErrorKind::NotFound);
+
+    let io_err_offset: std::io::Error = CfgExtractorError::OffsetTooLarge.into();
+    assert_eq!(io_err_offset.kind(), std::io::ErrorKind::InvalidData);
+}
+
+#[test]
+fn test_bytes_extractor_len() -> Result<(), Box<dyn std::error::Error>> {
+    let data = vec![1, 2, 3, 4, 5, 6, 7, 8];
+    let extractor = BytesExtractor::new(data);
+    assert_eq!(extractor.len()?, 8);
+    Ok(())
+}
+
+#[test]
+fn test_test_extractor_dummy() -> Result<(), Box<dyn std::error::Error>> {
+    let extractor = TestExtractor;
+    let bytes = extractor.extract_cfg_bytes(0)?;
+    assert!(!bytes.is_empty());
+    assert_eq!(extractor.len()?, bytes.len() as u64);
+    Ok(())
+}
