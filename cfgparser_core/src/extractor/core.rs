@@ -235,11 +235,7 @@ impl FileExtractorBuilder {
     }
 
     pub fn build(self) -> Result<FileExtractor, CfgExtractorError> {
-        let path: std::path::PathBuf = match self.path {
-            Some(path) => path,
-            None => return Err(CfgExtractorError::NoPayload),
-        };
-
+        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?;
         Ok(FileExtractor { path })
     }
 }
@@ -286,11 +282,7 @@ impl<'build_life> BytesExtractorBuilder<'build_life> {
     }
 
     pub fn build(self) -> Result<BytesExtractor, CfgExtractorError> {
-        let stream: &[u8] = match self.stream {
-            Some(stream) => stream,
-            None => return Err(CfgExtractorError::NoPayload),
-        };
-
+        let stream: &[u8] = self.stream.ok_or(CfgExtractorError::NoPayload)?;
         Ok(BytesExtractor {
             stream: stream.to_vec(),
         })
