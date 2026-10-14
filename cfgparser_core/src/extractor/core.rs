@@ -25,7 +25,7 @@ pub trait CfgExtractor {
     fn len(self) -> std::io::Result<u64>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CfgExtractorError {
     InvalidPayloadSize,
     NoPayload,
