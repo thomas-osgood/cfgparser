@@ -84,6 +84,8 @@ where
 {
     validate_offset(&mut reader, offset)?;
 
+    let reader_size: u64 = get_reader_size(&mut reader)?;
+
     // Safely calculate the size bytes starting position using checked math
     let combined_offset: usize = SZ_SIZEBUFF.checked_add(offset).ok_or_else(|| {
         std::io::Error::new(
@@ -117,9 +119,38 @@ where
         ));
     }
 
+    let sz_payload_usize: usize = usize::try_from(sz_payload).map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::InvalidPayloadSize,
+        )
+    })?;
+
+    let cfg_offset_abs: usize = SZ_SIZEBUFF
+        .checked_add(sz_payload_usize)
+        .and_then(|m| m.checked_add(offset))
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                CfgExtractorError::OffsetTooLarge,
+            )
+        })?;
+
+    if cfg_offset_abs as u64 > reader_size {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::OffsetTooLarge,
+        ));
+    }
+
     // calculate how far back to go from the end of the file
     // to reach the beginning byte of the config.
-    let cfg_offset: i64 = (SZ_SIZEBUFF as i64 + sz_payload + offset as i64) * -1;
+    let cfg_offset: i64 = -i64::try_from(cfg_offset_abs).map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            CfgExtractorError::OffsetTooLarge,
+        )
+    })?;
 
     // jump to the start of the config.
     reader.seek(std::io::SeekFrom::End(cfg_offset))?;
