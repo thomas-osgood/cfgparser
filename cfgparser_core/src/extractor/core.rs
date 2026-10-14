@@ -57,6 +57,19 @@ impl From<CfgExtractorError> for std::io::Error {
     }
 }
 
+/// function designed to determine the size (in byte) of a reader.
+///
+/// this seeks to the end of the reader, saves the location, then
+/// seeks back to the very beginning.
+fn get_reader_size<R>(mut reader: R) -> std::io::Result<u64>
+where
+    R: std::io::Seek,
+{
+    let file_size: u64 = reader.seek(std::io::SeekFrom::End(0))?;
+    let _ = reader.seek(std::io::SeekFrom::Start(0))?;
+    Ok(file_size)
+}
+
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
 /// either a Vec<u8> or an error.
