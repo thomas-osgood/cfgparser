@@ -50,6 +50,7 @@ impl From<CfgExtractorError> for std::io::Error {
     fn from(err: CfgExtractorError) -> Self {
         let kind: std::io::ErrorKind = match err {
             CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
+            CfgExtractorError::OffsetTooLarge => std::io::ErrorKind::InvalidData,
             _ => std::io::ErrorKind::Other,
         };
 
@@ -81,6 +82,8 @@ fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
+    validate_offset(&mut reader, offset)?;
+
     let size_start: i64 = (offset + SZ_SIZEBUFF) as i64 * -1;
 
     // allocate buffer that will hold the size bytes.
@@ -115,6 +118,22 @@ where
     reader.read_exact(&mut payload_buf)?;
 
     Ok(payload_buf)
+}
+
+/// helper function designed to insure the offset does not
+/// cause an overflow/out of bounds read when extracting
+/// the config from the reader's data.
+fn validate_offset<R>(mut reader: R, offset: usize) -> Result<(), std::io::Error>
+where
+    R: std::io::Read + std::io::Seek,
+{
+    let reader_size: u64 = get_reader_size(&mut reader)?;
+    let total_size: usize = SZ_SIZEBUFF + offset;
+    let difference: i64 = reader_size as i64 - total_size as i64;
+    if difference < 1 {
+        return Err(CfgExtractorError::OffsetTooLarge.into());
+    }
+    Ok(())
 }
 
 /// struct designed to extract configuration bytes from the
