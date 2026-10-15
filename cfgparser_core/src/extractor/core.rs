@@ -158,15 +158,8 @@ where
 
     let reader_size: u64 = get_reader_size(&mut reader)?;
 
-    // Safely calculate the size bytes starting position
-    let size_start: i64 = calc_size_block_start(offset)?;
-
-    // allocate buffer that will hold the size bytes.
-    let mut buf_sz: [u8; SZ_SIZEBUFF] = [0; SZ_SIZEBUFF];
-    // jumpt to the start of the size bytes (end - 8 bytes).
-    let _: u64 = reader.seek(std::io::SeekFrom::End(size_start))?;
-
-    reader.read_exact(&mut buf_sz)?;
+    // safely read the size bytes.
+    let buf_sz: [u8; SZ_SIZEBUFF] = read_size_bytes(&mut reader, offset)?;
 
     read_payload_bytes(reader, buf_sz, reader_size, offset)
 }
@@ -195,6 +188,24 @@ where
     reader.read_exact(&mut payload_buf)?;
 
     Ok(payload_buf)
+}
+
+/// helper function designed to safely read the block of bytes
+/// that hold the size of the payload.
+fn read_size_bytes<R>(mut reader: R, offset: usize) -> Result<[u8; SZ_SIZEBUFF], std::io::Error>
+where
+    R: std::io::Read + std::io::Seek,
+{
+    // Safely calculate the size bytes starting position
+    let size_start: i64 = calc_size_block_start(offset)?;
+    // allocate buffer that will hold the size bytes.
+    let mut buf_sz: [u8; SZ_SIZEBUFF] = [0; SZ_SIZEBUFF];
+    // jumpt to the start of the size bytes (end - 8 bytes).
+    let _: u64 = reader.seek(std::io::SeekFrom::End(size_start))?;
+    // read the bytes into the buffer
+    reader.read_exact(&mut buf_sz)?;
+
+    Ok(buf_sz)
 }
 
 /// helper function designed to insure the offset does not
