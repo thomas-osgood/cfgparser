@@ -154,9 +154,9 @@ fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
-    validate_offset(&mut reader, offset)?;
-
     let reader_size: u64 = get_reader_size(&mut reader)?;
+
+    validate_offset(reader_size, offset)?;
 
     // safely read the size bytes.
     let buf_sz: [u8; SZ_SIZEBUFF] = read_size_bytes(&mut reader, offset)?;
@@ -211,11 +211,7 @@ where
 /// helper function designed to insure the offset does not
 /// cause an overflow/out of bounds read when extracting
 /// the config from the reader's data.
-fn validate_offset<R>(mut reader: R, offset: usize) -> Result<(), std::io::Error>
-where
-    R: std::io::Read + std::io::Seek,
-{
-    let reader_size: u64 = get_reader_size(&mut reader)?;
+fn validate_offset(reader_size: u64, offset: usize) -> Result<(), std::io::Error> {
     let total_size: usize = SZ_SIZEBUFF
         .checked_add(offset)
         .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
