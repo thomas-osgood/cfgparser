@@ -303,25 +303,23 @@ pub struct BytesExtractor {
     stream: Vec<u8>,
 }
 
-pub struct BytesExtractorBuilder<'build_life> {
-    stream: Option<&'build_life [u8]>,
+pub struct BytesExtractorBuilder {
+    stream: Option<Vec<u8>>,
 }
 
-impl<'build_life> BytesExtractorBuilder<'build_life> {
+impl BytesExtractorBuilder {
     pub fn new() -> Self {
         Self { stream: None }
     }
 
-    pub fn with_stream(mut self, stream: &'build_life [u8]) -> Self {
-        self.stream = Some(stream);
+    pub fn with_stream<T: Into<Vec<u8>>>(mut self, stream: T) -> Self {
+        self.stream = Some(stream.into());
         self
     }
 
     pub fn build(self) -> Result<BytesExtractor, CfgExtractorError> {
-        let stream: &[u8] = self.stream.ok_or(CfgExtractorError::NoPayload)?;
-        Ok(BytesExtractor {
-            stream: stream.to_vec(),
-        })
+        let stream: Vec<u8> = self.stream.ok_or(CfgExtractorError::NoPayload)?;
+        Ok(BytesExtractor { stream })
     }
 }
 
