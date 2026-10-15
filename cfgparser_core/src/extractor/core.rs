@@ -140,6 +140,8 @@ where
         )
     })?;
 
+    // confirm the payload size is not greater than the
+    // max payload size defined above.
     if sz_payload_usize > MAX_PAYLOAD_SIZE {
         return Err(CfgExtractorError::InvalidPayloadSize.into());
     }
