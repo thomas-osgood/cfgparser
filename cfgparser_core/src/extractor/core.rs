@@ -220,22 +220,22 @@ pub struct FileExtractor {
 }
 
 #[derive(Debug, Default)]
-pub struct FileExtractorBuilder {
-    path: Option<std::path::PathBuf>,
+pub struct FileExtractorBuilder<'build_life> {
+    path: Option<&'build_life std::path::Path>,
 }
 
-impl FileExtractorBuilder {
+impl<'build_life> FileExtractorBuilder<'build_life> {
     pub fn new() -> Self {
         Self { path: None }
     }
 
-    pub fn with_path<P: AsRef<std::path::Path>>(mut self, path: P) -> Self {
-        self.path = Some(path.as_ref().into());
+    pub fn with_path<P: AsRef<std::path::Path>>(mut self, path: &'build_life P) -> Self {
+        self.path = Some(path.as_ref());
         self
     }
 
     pub fn build(self) -> Result<FileExtractor, CfgExtractorError> {
-        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?;
+        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?.into();
         Ok(FileExtractor { path })
     }
 }
