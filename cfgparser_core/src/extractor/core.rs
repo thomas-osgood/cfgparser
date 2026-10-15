@@ -25,7 +25,7 @@ const SZ_SIZEBUFF: usize = 8;
 /// the main implementation of this is in SelfExtractor.
 pub trait CfgExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>>;
-    fn len(self) -> std::io::Result<u64>;
+    fn len(&self) -> std::io::Result<u64>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -245,7 +245,7 @@ impl CfgExtractor for SelfExtractor {
 
     /// function designed to return the size (in bytes)
     /// of the current binary.
-    fn len(self) -> std::io::Result<u64> {
+    fn len(&self) -> std::io::Result<u64> {
         let current_binary: std::path::PathBuf = std::env::current_exe()?;
         let metadata: std::fs::Metadata = std::fs::metadata(current_binary)?;
         Ok(metadata.len())
@@ -294,8 +294,8 @@ impl CfgExtractor for FileExtractor {
         read_bytes(fptr, offset)
     }
 
-    fn len(self) -> std::io::Result<u64> {
-        let metadata: std::fs::Metadata = std::fs::metadata(self.path)?;
+    fn len(&self) -> std::io::Result<u64> {
+        let metadata: std::fs::Metadata = std::fs::metadata(&self.path)?;
         Ok(metadata.len())
     }
 }
@@ -353,7 +353,7 @@ impl CfgExtractor for BytesExtractor {
         read_bytes(stream, offset)
     }
 
-    fn len(self) -> std::io::Result<u64> {
+    fn len(&self) -> std::io::Result<u64> {
         let len: u64 = match self.stream.len().try_into() {
             Ok(len) => len,
             Err(e) => return Err(CfgExtractorError::Unknown(e.to_string()).into()),
@@ -385,7 +385,7 @@ impl CfgExtractor for TestExtractor {
         ])
     }
 
-    fn len(self) -> std::io::Result<u64> {
+    fn len(&self) -> std::io::Result<u64> {
         let v1: Vec<u8> = vec![
             22, 28, 41, 29, 7, 71, 61, 85, 42, 24, 10, 19, 58, 11, 45, 30, 60, 71, 57, 9, 7, 53,
             13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
