@@ -5,6 +5,9 @@ const ERR_INVALID_PAYLOAD_SIZE: &str = "sz_payload must be >= 0";
 const ERR_NO_PAYLOAD: &str = "no payload specified for extractor";
 const ERR_OFFSET_TOO_LARGE: &str = "the offset exceeds the maximum allowed size for this reader";
 
+/// Maximum allowable configuration payload size (e.g., 10 MB)
+const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024;
+
 /// constant representing a value of no offset.
 ///
 /// this will inidicate to read from the end of
