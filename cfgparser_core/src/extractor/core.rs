@@ -30,6 +30,7 @@ pub enum CfgExtractorError {
     InvalidPayloadSize,
     NoPayload,
     OffsetTooLarge,
+    PayloadTooSmall,
     Unknown(String),
 }
 
@@ -39,6 +40,9 @@ impl std::fmt::Display for CfgExtractorError {
             CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
             CfgExtractorError::NoPayload => write!(f, "{}", ERR_NO_PAYLOAD),
             CfgExtractorError::OffsetTooLarge => write!(f, "{}", ERR_OFFSET_TOO_LARGE),
+            CfgExtractorError::PayloadTooSmall => {
+                write!(f, "payload must be at least {} bytes", SZ_SIZEBUFF)
+            }
             CfgExtractorError::Unknown(msg) => write!(f, "Unknown Extraction Error: {}", msg),
         }
     }
@@ -51,9 +55,9 @@ impl CfgExtractorError {
     pub fn kind(&self) -> std::io::ErrorKind {
         match self {
             CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
-            CfgExtractorError::OffsetTooLarge | CfgExtractorError::InvalidPayloadSize => {
-                std::io::ErrorKind::InvalidData
-            }
+            CfgExtractorError::OffsetTooLarge
+            | CfgExtractorError::InvalidPayloadSize
+            | CfgExtractorError::PayloadTooSmall => std::io::ErrorKind::InvalidData,
             CfgExtractorError::NoPayload => std::io::ErrorKind::Other,
         }
     }
@@ -182,6 +186,9 @@ where
     let total_size: usize = SZ_SIZEBUFF
         .checked_add(offset)
         .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
+    if total_size < SZ_SIZEBUFF {
+        return Err(CfgExtractorError::PayloadTooSmall.into());
+    }
     let difference: i64 = reader_size as i64 - total_size as i64;
     if difference < 1 {
         return Err(CfgExtractorError::OffsetTooLarge.into());
