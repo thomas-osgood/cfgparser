@@ -168,12 +168,12 @@ where
 
     reader.read_exact(&mut buf_sz)?;
 
-    read_payload(reader, buf_sz, reader_size, offset)
+    read_payload_bytes(reader, buf_sz, reader_size, offset)
 }
 
 /// function designed to safely read and return the main
 /// payload bytes.
-fn read_payload<R>(
+fn read_payload_bytes<R>(
     mut reader: R,
     buf_sz: [u8; SZ_SIZEBUFF],
     reader_size: u64,
