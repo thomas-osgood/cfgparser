@@ -256,17 +256,17 @@ pub struct FileExtractor {
 }
 
 #[derive(Debug, Default)]
-pub struct FileExtractorBuilder<'build_life> {
-    path: Option<&'build_life std::path::Path>,
+pub struct FileExtractorBuilder {
+    path: Option<std::path::PathBuf>,
 }
 
-impl<'build_life> FileExtractorBuilder<'build_life> {
+impl FileExtractorBuilder {
     pub fn new() -> Self {
         Self { path: None }
     }
 
-    pub fn with_path<P: AsRef<std::path::Path>>(mut self, path: &'build_life P) -> Self {
-        self.path = Some(path.as_ref());
+    pub fn with_path<P: Into<std::path::PathBuf>>(mut self, path: P) -> Self {
+        self.path = Some(path.into());
         self
     }
 
