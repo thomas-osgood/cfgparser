@@ -57,11 +57,12 @@ impl CfgExtractorError {
     /// Helper method to cleanly map errors to their corresponding io::ErrorKind
     pub fn kind(&self) -> std::io::ErrorKind {
         match self {
-            CfgExtractorError::Unknown(_) => std::io::ErrorKind::NotFound,
             CfgExtractorError::OffsetTooLarge
             | CfgExtractorError::InvalidPayloadSize
             | CfgExtractorError::PayloadTooSmall => std::io::ErrorKind::InvalidData,
-            CfgExtractorError::NoPayload => std::io::ErrorKind::Other,
+            CfgExtractorError::NoPayload | CfgExtractorError::Unknown(_) => {
+                std::io::ErrorKind::Other
+            }
         }
     }
 }
