@@ -380,17 +380,6 @@ impl CfgExtractor for TestExtractor {
     }
 
     fn len(&self) -> std::io::Result<u64> {
-        let v1: Vec<u8> = vec![
-            22, 28, 41, 29, 7, 71, 61, 85, 42, 24, 10, 19, 58, 11, 45, 30, 60, 71, 57, 9, 7, 53,
-            13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
-            46, 54, 39, 77,
-        ];
-
-        let len: u64 = match v1.len().try_into() {
-            Ok(len) => len,
-            Err(e) => return Err(CfgExtractorError::Unknown(e.to_string()).into()),
-        };
-
-        Ok(len)
+        Ok(48)
     }
 }
