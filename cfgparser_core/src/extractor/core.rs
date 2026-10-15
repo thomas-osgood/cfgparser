@@ -140,6 +140,10 @@ where
         )
     })?;
 
+    if sz_payload_usize > MAX_PAYLOAD_SIZE {
+        return Err(CfgExtractorError::InvalidPayloadSize.into());
+    }
+
     let cfg_offset_abs: usize = SZ_SIZEBUFF
         .checked_add(sz_payload_usize)
         .and_then(|m| m.checked_add(offset))
