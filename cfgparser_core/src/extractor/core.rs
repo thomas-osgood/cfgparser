@@ -173,6 +173,8 @@ where
     read_payload(reader, buf_sz, reader_size, offset)
 }
 
+/// function designed to safely read and return the main
+/// payload bytes.
 fn read_payload<R>(
     mut reader: R,
     buf_sz: [u8; SZ_SIZEBUFF],
