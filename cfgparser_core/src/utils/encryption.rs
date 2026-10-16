@@ -1,6 +1,6 @@
 /// helper function designed to build and return a decryptor
 /// based on a key and encryption type passed in.
-fn get_decryptor(
+pub fn get_decryptor(
     key: &[u8],
     enc_type_i32: i32,
 ) -> Result<cfgparser_encryption::DynamicCipher, Box<dyn std::error::Error>> {
