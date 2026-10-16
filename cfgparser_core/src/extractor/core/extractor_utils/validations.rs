@@ -6,7 +6,7 @@ mod unit_tests;
 /// helper function designed to insure the offset does not
 /// cause an overflow/out of bounds read when extracting
 /// the config from the reader's data.
-pub fn validate_offset(reader_size: u64, offset: usize) -> Result<(), std::io::Error> {
+pub fn validate_offset(reader_size: u64, offset: usize) -> std::io::Result<()> {
     let total_size: usize = SZ_SIZEBUFF
         .checked_add(offset)
         .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;

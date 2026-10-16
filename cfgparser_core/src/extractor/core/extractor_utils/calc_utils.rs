@@ -9,7 +9,7 @@ pub fn calc_cfg_block_start(
     buf_sz: [u8; SZ_SIZEBUFF],
     offset: usize,
     reader_size: u64,
-) -> Result<i64, std::io::Error> {
+) -> std::io::Result<i64> {
     // calculate the payload size
     let sz_payload: usize = calc_sz_payload(buf_sz)?;
 
@@ -29,7 +29,7 @@ pub fn calc_cfg_block_start(
 
 /// helper function designed to safely calculate the starting
 /// position of the size block.
-pub fn calc_size_block_start(offset: usize) -> Result<i64, std::io::Error> {
+pub fn calc_size_block_start(offset: usize) -> std::io::Result<i64> {
     // Safely calculate the size bytes starting position using checked math
     let combined_offset: usize = SZ_SIZEBUFF
         .checked_add(offset)
@@ -40,7 +40,7 @@ pub fn calc_size_block_start(offset: usize) -> Result<i64, std::io::Error> {
 
 /// helper function designed to carry out converting the payload
 /// size from raw bytes to usize safely.
-pub fn calc_sz_payload(buf_sz: [u8; SZ_SIZEBUFF]) -> Result<usize, std::io::Error> {
+pub fn calc_sz_payload(buf_sz: [u8; SZ_SIZEBUFF]) -> std::io::Result<usize> {
     // convert the bytes read into i64.
     let sz_payload: i64 = i64::from_be_bytes(buf_sz);
 

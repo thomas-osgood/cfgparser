@@ -23,7 +23,7 @@ pub fn read_payload_bytes<R>(
     buf_sz: [u8; SZ_SIZEBUFF],
     reader_size: u64,
     offset: usize,
-) -> Result<Vec<u8>, std::io::Error>
+) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
@@ -44,7 +44,7 @@ where
 
 /// helper function designed to safely read the block of bytes
 /// that hold the size of the payload.
-pub fn read_size_bytes<R>(mut reader: R, offset: usize) -> Result<[u8; SZ_SIZEBUFF], std::io::Error>
+pub fn read_size_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<[u8; SZ_SIZEBUFF]>
 where
     R: std::io::Read + std::io::Seek,
 {
