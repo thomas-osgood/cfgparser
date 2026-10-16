@@ -3,6 +3,25 @@ use base64::{self, Engine};
 #[cfg(test)]
 mod unit_tests;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TransformerError {
+    DecryptionFailure(String),
+    Base64DecodingFailure(String),
+}
+
+impl std::fmt::Display for TransformerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TransformerError::Base64DecodingFailure(msg) => {
+                write!(f, "Base64 decoding failed: {}", msg)
+            }
+            TransformerError::DecryptionFailure(msg) => write!(f, "Decryption failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for TransformerError {}
+
 /// function designed to JSON deserialize a given string into
 /// a Configuration struct and return the struct.
 ///
