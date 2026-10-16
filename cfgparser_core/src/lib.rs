@@ -63,8 +63,53 @@ use windows::Win32::{
 #[cfg(test)]
 mod unit_tests;
 
+#[derive(Debug)]
+pub enum CfgParserError {
+    Extraction(std::io::Error),
+    Transformer(transformer::core::TransformerError),
+    Deserialization(serde_json::Error),
+}
+
+impl std::fmt::Display for CfgParserError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CfgParserError::Extraction(e) => write!(f, "Extraction error: {}", e),
+            CfgParserError::Transformer(e) => write!(f, "Transformer error: {}", e),
+            CfgParserError::Deserialization(e) => write!(f, "Deserialization error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for CfgParserError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            CfgParserError::Extraction(e) => Some(e),
+            CfgParserError::Transformer(e) => Some(e),
+            CfgParserError::Deserialization(e) => Some(e),
+        }
+    }
+}
+
+impl From<std::io::Error> for CfgParserError {
+    fn from(err: std::io::Error) -> Self {
+        CfgParserError::Extraction(err)
+    }
+}
+
+impl From<transformer::core::TransformerError> for CfgParserError {
+    fn from(err: transformer::core::TransformerError) -> Self {
+        CfgParserError::Transformer(err)
+    }
+}
+
+impl From<serde_json::Error> for CfgParserError {
+    fn from(err: serde_json::Error) -> Self {
+        CfgParserError::Deserialization(err)
+    }
+}
+
 /// custom type defining the standard return for the rust read functions.
-pub type CfgResult = std::result::Result<models::core::Configuration, Box<dyn std::error::Error>>;
+pub type CfgResult = std::result::Result<models::core::Configuration, CfgParserError>;
 
 /// function designed to run through the process of extracting,
 /// transforming and deserializing configuration data from the
