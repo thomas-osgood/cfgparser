@@ -60,7 +60,7 @@ fn validate_key(key: &[u8]) -> Result<(), AESError> {
 
 impl<'build_life> AESCipherBuilder<'build_life> {
     pub fn new() -> Self {
-        AESCipherBuilder { key: None }
+        Self { key: None }
     }
 
     /// set the encryption key for the cipher.

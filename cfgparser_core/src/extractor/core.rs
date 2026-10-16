@@ -1,7 +1,13 @@
+mod extractor_utils;
 #[cfg(test)]
 mod unit_tests;
 
 const ERR_INVALID_PAYLOAD_SIZE: &str = "sz_payload must be >= 0";
+const ERR_NO_PAYLOAD: &str = "no payload specified for extractor";
+const ERR_OFFSET_TOO_LARGE: &str = "the offset exceeds the maximum allowed size for this reader";
+
+/// Maximum allowable configuration payload size (e.g., 10 MB)
+const MAX_PAYLOAD_SIZE: usize = 10 * 1024 * 1024;
 
 /// constant representing a value of no offset.
 ///
@@ -20,22 +26,53 @@ const SZ_SIZEBUFF: usize = 8;
 /// the main implementation of this is in SelfExtractor.
 pub trait CfgExtractor {
     fn extract_cfg_bytes(&self, offset: usize) -> std::io::Result<Vec<u8>>;
+    fn len(&self) -> std::io::Result<u64>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CfgExtractorError {
     InvalidPayloadSize,
+    NoPayload,
+    OffsetTooLarge,
+    PayloadTooSmall,
+    Unknown(String),
 }
 
 impl std::fmt::Display for CfgExtractorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CfgExtractorError::InvalidPayloadSize => write!(f, "{}", ERR_INVALID_PAYLOAD_SIZE),
+            CfgExtractorError::NoPayload => write!(f, "{}", ERR_NO_PAYLOAD),
+            CfgExtractorError::OffsetTooLarge => write!(f, "{}", ERR_OFFSET_TOO_LARGE),
+            CfgExtractorError::PayloadTooSmall => {
+                write!(f, "payload must be at least {} bytes", SZ_SIZEBUFF)
+            }
+            CfgExtractorError::Unknown(msg) => write!(f, "Unknown Extraction Error: {}", msg),
         }
     }
 }
 
 impl std::error::Error for CfgExtractorError {}
+
+impl CfgExtractorError {
+    /// Helper method to cleanly map errors to their corresponding io::ErrorKind
+    pub fn kind(&self) -> std::io::ErrorKind {
+        match self {
+            CfgExtractorError::OffsetTooLarge
+            | CfgExtractorError::InvalidPayloadSize
+            | CfgExtractorError::PayloadTooSmall => std::io::ErrorKind::InvalidData,
+            CfgExtractorError::NoPayload | CfgExtractorError::Unknown(_) => {
+                std::io::ErrorKind::Other
+            }
+        }
+    }
+}
+
+impl From<CfgExtractorError> for std::io::Error {
+    fn from(err: CfgExtractorError) -> Self {
+        std::io::Error::new(err.kind(), err)
+    }
+}
 
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
@@ -48,40 +85,15 @@ fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
-    let size_start: i64 = (offset + SZ_SIZEBUFF) as i64 * -1;
+    let reader_size: u64 = extractor_utils::read_utils::get_reader_size(&mut reader)?;
 
-    // allocate buffer that will hold the size bytes.
-    let mut buf_sz: [u8; SZ_SIZEBUFF] = [0; SZ_SIZEBUFF];
-    // jumpt to the start of the size bytes (end - 8 bytes).
-    let _: u64 = reader.seek(std::io::SeekFrom::End(size_start))?;
+    extractor_utils::validations::validate_offset(reader_size, offset)?;
 
-    reader.read_exact(&mut buf_sz)?;
+    // safely read the size bytes.
+    let buf_sz: [u8; SZ_SIZEBUFF] =
+        extractor_utils::read_utils::read_size_bytes(&mut reader, offset)?;
 
-    // convert the bytes read into i64.
-    let sz_payload: i64 = i64::from_be_bytes(buf_sz);
-
-    // validate the sz_payload size is valid for a usize conversion.
-    if sz_payload < 0 {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            CfgExtractorError::InvalidPayloadSize,
-        ));
-    }
-
-    // calculate how far back to go from the end of the file
-    // to reach the beginning byte of the config.
-    let cfg_offset: i64 = (8 + sz_payload + offset as i64) * -1;
-
-    // jump to the start of the config.
-    reader.seek(std::io::SeekFrom::End(cfg_offset))?;
-
-    // allocate buffer for payload bytes.
-    let mut payload_buf: Vec<u8> = vec![0u8; sz_payload as usize];
-
-    // read the payload bytes into the payload buffer.
-    reader.read_exact(&mut payload_buf)?;
-
-    Ok(payload_buf)
+    extractor_utils::read_utils::read_payload_bytes(reader, buf_sz, reader_size, offset)
 }
 
 /// struct designed to extract configuration bytes from the
@@ -97,13 +109,42 @@ impl CfgExtractor for SelfExtractor {
         // read and return the  bytes from the file.
         read_bytes(fptr, offset)
     }
+
+    /// function designed to return the size (in bytes)
+    /// of the current binary.
+    fn len(&self) -> std::io::Result<u64> {
+        let current_binary: std::path::PathBuf = std::env::current_exe()?;
+        let metadata: std::fs::Metadata = std::fs::metadata(current_binary)?;
+        Ok(metadata.len())
+    }
 }
 
 #[derive(Debug, Default)]
 /// struct designed to extract configuration bytes from a
 /// given file.
 pub struct FileExtractor {
-    pub path: std::path::PathBuf,
+    path: std::path::PathBuf,
+}
+
+#[derive(Debug, Default)]
+pub struct FileExtractorBuilder {
+    path: Option<std::path::PathBuf>,
+}
+
+impl FileExtractorBuilder {
+    pub fn new() -> Self {
+        Self { path: None }
+    }
+
+    pub fn with_path<P: Into<std::path::PathBuf>>(mut self, path: P) -> Self {
+        self.path = Some(path.into());
+        self
+    }
+
+    pub fn build(self) -> Result<FileExtractor, CfgExtractorError> {
+        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?;
+        Ok(FileExtractor { path })
+    }
 }
 
 impl FileExtractor {
@@ -119,6 +160,11 @@ impl CfgExtractor for FileExtractor {
         let fptr: std::fs::File = std::fs::File::open(&self.path)?;
         read_bytes(fptr, offset)
     }
+
+    fn len(&self) -> std::io::Result<u64> {
+        let metadata: std::fs::Metadata = std::fs::metadata(&self.path)?;
+        Ok(metadata.len())
+    }
 }
 
 #[derive(Debug, Default)]
@@ -126,6 +172,26 @@ impl CfgExtractor for FileExtractor {
 /// a byte vector (`Vec<u8>`).
 pub struct BytesExtractor {
     stream: Vec<u8>,
+}
+
+pub struct BytesExtractorBuilder {
+    stream: Option<Vec<u8>>,
+}
+
+impl BytesExtractorBuilder {
+    pub fn new() -> Self {
+        Self { stream: None }
+    }
+
+    pub fn with_stream<T: Into<Vec<u8>>>(mut self, stream: T) -> Self {
+        self.stream = Some(stream.into());
+        self
+    }
+
+    pub fn build(self) -> Result<BytesExtractor, CfgExtractorError> {
+        let stream: Vec<u8> = self.stream.ok_or(CfgExtractorError::NoPayload)?;
+        Ok(BytesExtractor { stream })
+    }
 }
 
 impl BytesExtractor {
@@ -151,6 +217,15 @@ impl CfgExtractor for BytesExtractor {
         let stream: std::io::Cursor<&[u8]> = std::io::Cursor::new(&self.stream);
         read_bytes(stream, offset)
     }
+
+    fn len(&self) -> std::io::Result<u64> {
+        let len: u64 = match self.stream.len().try_into() {
+            Ok(len) => len,
+            Err(e) => return Err(CfgExtractorError::Unknown(e.to_string()).into()),
+        };
+
+        Ok(len)
+    }
 }
 
 #[cfg(test)]
@@ -173,5 +248,9 @@ impl CfgExtractor for TestExtractor {
             13, 2, 16, 86, 50, 27, 41, 55, 50, 12, 0, 53, 92, 13, 23, 38, 42, 68, 44, 48, 20, 18,
             46, 54, 39, 77,
         ])
+    }
+
+    fn len(&self) -> std::io::Result<u64> {
+        Ok(48)
     }
 }
