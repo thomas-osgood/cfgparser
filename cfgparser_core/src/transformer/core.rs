@@ -3,6 +3,25 @@ use base64::{self, Engine};
 #[cfg(test)]
 mod unit_tests;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TransformerError {
+    DecryptionFailure(String),
+    Base64DecodingFailure(String),
+}
+
+impl std::fmt::Display for TransformerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TransformerError::Base64DecodingFailure(msg) => {
+                write!(f, "Base64 decoding failed: {}", msg)
+            }
+            TransformerError::DecryptionFailure(msg) => write!(f, "Decryption failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for TransformerError {}
+
 /// function designed to JSON deserialize a given string into
 /// a Configuration struct and return the struct.
 ///
@@ -20,16 +39,17 @@ pub fn deserialize_payload(
 ///
 /// 1. decrypt bytes
 /// 2. base64-decode plaintext
-pub fn transform_payload<D>(
-    decryptor: D,
-    raw_payload: &[u8],
-) -> Result<Vec<u8>, Box<dyn std::error::Error>>
+pub fn transform_payload<D>(decryptor: D, raw_payload: &[u8]) -> Result<Vec<u8>, TransformerError>
 where
     D: cfgparser_encryption::Decryptor,
     D::Error: 'static,
 {
     // XOR decrypt the raw_payload bytes.
-    let plaintext: Vec<u8> = decryptor.decrypt(raw_payload)?;
+    let plaintext: Vec<u8> = decryptor
+        .decrypt(raw_payload)
+        .map_err(|e| TransformerError::DecryptionFailure(e.to_string()))?;
     // base64-decode the payload and save the result
-    Ok(base64::engine::general_purpose::STANDARD_NO_PAD.decode(plaintext)?)
+    Ok(base64::engine::general_purpose::STANDARD_NO_PAD
+        .decode(plaintext)
+        .map_err(|e| TransformerError::Base64DecodingFailure(e.to_string()))?)
 }
