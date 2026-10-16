@@ -1,3 +1,4 @@
+mod extractor_utils;
 #[cfg(test)]
 mod unit_tests;
 
@@ -73,77 +74,6 @@ impl From<CfgExtractorError> for std::io::Error {
     }
 }
 
-/// helper function designed to safely calculate the
-/// starting position of the cfg block.
-fn calc_cfg_block_start(
-    buf_sz: [u8; SZ_SIZEBUFF],
-    offset: usize,
-    reader_size: u64,
-) -> Result<i64, std::io::Error> {
-    // calculate the payload size
-    let sz_payload: usize = calc_sz_payload(buf_sz)?;
-
-    let cfg_offset_abs: usize = SZ_SIZEBUFF
-        .checked_add(sz_payload)
-        .and_then(|m| m.checked_add(offset))
-        .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
-
-    if cfg_offset_abs as u64 > reader_size {
-        return Err(CfgExtractorError::OffsetTooLarge.into());
-    }
-
-    // calculate how far back to go from the end of the file
-    // to reach the beginning byte of the config.
-    Ok(-i64::try_from(cfg_offset_abs).map_err(|_| CfgExtractorError::OffsetTooLarge)?)
-}
-
-/// helper function designed to safely calculate the starting
-/// position of the size block.
-fn calc_size_block_start(offset: usize) -> Result<i64, std::io::Error> {
-    // Safely calculate the size bytes starting position using checked math
-    let combined_offset: usize = SZ_SIZEBUFF
-        .checked_add(offset)
-        .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
-
-    Ok(-i64::try_from(combined_offset).map_err(|_| CfgExtractorError::OffsetTooLarge)?)
-}
-
-/// helper function designed to carry out converting the payload
-/// size from raw bytes to usize safely.
-fn calc_sz_payload(buf_sz: [u8; SZ_SIZEBUFF]) -> Result<usize, std::io::Error> {
-    // convert the bytes read into i64.
-    let sz_payload: i64 = i64::from_be_bytes(buf_sz);
-
-    // validate the sz_payload size is valid for a usize conversion.
-    if sz_payload < 0 {
-        return Err(CfgExtractorError::InvalidPayloadSize.into());
-    }
-
-    let sz_payload_usize: usize =
-        usize::try_from(sz_payload).map_err(|_| CfgExtractorError::InvalidPayloadSize)?;
-
-    // confirm the payload size is not greater than the
-    // max payload size defined above.
-    if sz_payload_usize > MAX_PAYLOAD_SIZE {
-        return Err(CfgExtractorError::InvalidPayloadSize.into());
-    }
-
-    Ok(sz_payload_usize)
-}
-
-/// function designed to determine the size (in byte) of a reader.
-///
-/// this seeks to the end of the reader, saves the location, then
-/// seeks back to the very beginning.
-fn get_reader_size<R>(mut reader: R) -> std::io::Result<u64>
-where
-    R: std::io::Seek,
-{
-    let file_size: u64 = reader.seek(std::io::SeekFrom::End(0))?;
-    let _ = reader.seek(std::io::SeekFrom::Start(0))?;
-    Ok(file_size)
-}
-
 /// generic function designed to read the configuration bytes from
 /// a reader that implements the Read + Seek traits and return
 /// either a Vec<u8> or an error.
@@ -155,74 +85,15 @@ fn read_bytes<R>(mut reader: R, offset: usize) -> std::io::Result<Vec<u8>>
 where
     R: std::io::Read + std::io::Seek,
 {
-    let reader_size: u64 = get_reader_size(&mut reader)?;
+    let reader_size: u64 = extractor_utils::read_utils::get_reader_size(&mut reader)?;
 
-    validate_offset(reader_size, offset)?;
+    extractor_utils::validations::validate_offset(reader_size, offset)?;
 
     // safely read the size bytes.
-    let buf_sz: [u8; SZ_SIZEBUFF] = read_size_bytes(&mut reader, offset)?;
+    let buf_sz: [u8; SZ_SIZEBUFF] =
+        extractor_utils::read_utils::read_size_bytes(&mut reader, offset)?;
 
-    read_payload_bytes(reader, buf_sz, reader_size, offset)
-}
-
-/// function designed to safely read and return the main
-/// payload bytes.
-fn read_payload_bytes<R>(
-    mut reader: R,
-    buf_sz: [u8; SZ_SIZEBUFF],
-    reader_size: u64,
-    offset: usize,
-) -> Result<Vec<u8>, std::io::Error>
-where
-    R: std::io::Read + std::io::Seek,
-{
-    // calculate the payload size
-    let sz_payload: usize = calc_sz_payload(buf_sz)?;
-    // calculate how far back to go from the end of the file
-    // to reach the beginning byte of the config.
-    let cfg_offset: i64 = calc_cfg_block_start(buf_sz, offset, reader_size)?;
-    // jump to the start of the config.
-    reader.seek(std::io::SeekFrom::End(cfg_offset))?;
-    // allocate buffer for payload bytes.
-    let mut payload_buf: Vec<u8> = vec![0u8; sz_payload as usize];
-    // read the payload bytes into the payload buffer.
-    reader.read_exact(&mut payload_buf)?;
-
-    Ok(payload_buf)
-}
-
-/// helper function designed to safely read the block of bytes
-/// that hold the size of the payload.
-fn read_size_bytes<R>(mut reader: R, offset: usize) -> Result<[u8; SZ_SIZEBUFF], std::io::Error>
-where
-    R: std::io::Read + std::io::Seek,
-{
-    // Safely calculate the size bytes starting position
-    let size_start: i64 = calc_size_block_start(offset)?;
-    // allocate buffer that will hold the size bytes.
-    let mut buf_sz: [u8; SZ_SIZEBUFF] = [0; SZ_SIZEBUFF];
-    // jumpt to the start of the size bytes (end - 8 bytes).
-    let _: u64 = reader.seek(std::io::SeekFrom::End(size_start))?;
-    // read the bytes into the buffer
-    reader.read_exact(&mut buf_sz)?;
-
-    Ok(buf_sz)
-}
-
-/// helper function designed to insure the offset does not
-/// cause an overflow/out of bounds read when extracting
-/// the config from the reader's data.
-fn validate_offset(reader_size: u64, offset: usize) -> Result<(), std::io::Error> {
-    let total_size: usize = SZ_SIZEBUFF
-        .checked_add(offset)
-        .ok_or_else(|| CfgExtractorError::OffsetTooLarge)?;
-    if total_size < SZ_SIZEBUFF {
-        return Err(CfgExtractorError::PayloadTooSmall.into());
-    }
-    if reader_size <= total_size as u64 {
-        return Err(CfgExtractorError::OffsetTooLarge.into());
-    }
-    Ok(())
+    extractor_utils::read_utils::read_payload_bytes(reader, buf_sz, reader_size, offset)
 }
 
 /// struct designed to extract configuration bytes from the
