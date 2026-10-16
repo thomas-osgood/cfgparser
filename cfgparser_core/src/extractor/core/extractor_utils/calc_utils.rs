@@ -1,5 +1,8 @@
 use super::*;
 
+#[cfg(test)]
+mod unit_tests;
+
 /// helper function designed to safely calculate the
 /// starting position of the cfg block.
 pub fn calc_cfg_block_start(

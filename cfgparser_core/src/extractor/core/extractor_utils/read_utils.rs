@@ -1,5 +1,8 @@
 use super::*;
 
+#[cfg(test)]
+mod unit_tests;
+
 /// function designed to determine the size (in byte) of a reader.
 ///
 /// this seeks to the end of the reader, saves the location, then

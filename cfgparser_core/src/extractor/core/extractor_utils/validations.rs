@@ -1,5 +1,8 @@
 use super::*;
 
+#[cfg(test)]
+mod unit_tests;
+
 /// helper function designed to insure the offset does not
 /// cause an overflow/out of bounds read when extracting
 /// the config from the reader's data.
