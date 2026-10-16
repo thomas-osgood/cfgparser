@@ -219,8 +219,7 @@ fn validate_offset(reader_size: u64, offset: usize) -> Result<(), std::io::Error
     if total_size < SZ_SIZEBUFF {
         return Err(CfgExtractorError::PayloadTooSmall.into());
     }
-    let difference: i64 = reader_size as i64 - total_size as i64;
-    if difference < 1 {
+    if reader_size <= total_size as u64 {
         return Err(CfgExtractorError::OffsetTooLarge.into());
     }
     Ok(())
@@ -272,7 +271,7 @@ impl FileExtractorBuilder {
     }
 
     pub fn build(self) -> Result<FileExtractor, CfgExtractorError> {
-        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?.into();
+        let path: std::path::PathBuf = self.path.ok_or(CfgExtractorError::NoPayload)?;
         Ok(FileExtractor { path })
     }
 }
