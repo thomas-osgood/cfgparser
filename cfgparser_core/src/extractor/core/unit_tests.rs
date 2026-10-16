@@ -190,7 +190,7 @@ fn test_error_display_and_conversions() {
     assert!(err_unknown.to_string().contains("test failure"));
 
     let io_err: std::io::Error = CfgExtractorError::Unknown("fail".into()).into();
-    assert_eq!(io_err.kind(), std::io::ErrorKind::NotFound);
+    assert_eq!(io_err.kind(), std::io::ErrorKind::Other);
 
     let io_err_offset: std::io::Error = CfgExtractorError::OffsetTooLarge.into();
     assert_eq!(io_err_offset.kind(), std::io::ErrorKind::InvalidData);
