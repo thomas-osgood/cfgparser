@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod unit_tests;
+
 /// helper function designed to build and return a decryptor
 /// based on a key and encryption type passed in.
 pub fn get_decryptor(

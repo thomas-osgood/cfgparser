@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod unit_tests;
+
 pub struct FfiParams {
     pub key: Vec<u8>,
     pub enc_type_i32: i32,
