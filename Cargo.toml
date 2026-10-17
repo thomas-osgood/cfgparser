@@ -1,3 +1,13 @@
 [workspace]
 members = ["cfgparser_core", "cfgparser_encryption"]
 resolver = "2"
+
+[workspace.package]
+authors = ["thomas-osgood"]
+description = "library designed to handle extraction of configuration embedded in a binary or byte stream"
+version = "0.9.5"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+cfgparser_encryption = { version = "0.9.5", path = "cfgparser_encryption" }
