@@ -8,26 +8,32 @@ pub enum UtilsError {
 }
 
 impl From<cfgparser_encryption::aes::engine::AESError> for UtilsError {
-    fn from(value: cfgparser_encryption::aes::engine::AESError) -> Self {
-        UtilsError::DecryptorCreation(value.to_string())
+    fn from(err: cfgparser_encryption::aes::engine::AESError) -> Self {
+        UtilsError::DecryptorCreation(err.to_string())
     }
 }
 
 impl From<cfgparser_encryption::EncryptionTypeError> for UtilsError {
-    fn from(value: cfgparser_encryption::EncryptionTypeError) -> Self {
-        UtilsError::InvalidDecryptorType(value.to_string())
+    fn from(err: cfgparser_encryption::EncryptionTypeError) -> Self {
+        UtilsError::InvalidDecryptorType(err.to_string())
     }
 }
 
 impl From<cfgparser_encryption::viginere::engine::ViginerCipherError> for UtilsError {
-    fn from(value: cfgparser_encryption::viginere::engine::ViginerCipherError) -> Self {
-        UtilsError::DecryptorCreation(value.to_string())
+    fn from(err: cfgparser_encryption::viginere::engine::ViginerCipherError) -> Self {
+        UtilsError::DecryptorCreation(err.to_string())
     }
 }
 
 impl From<cfgparser_encryption::xor::engine::XORCipherError> for UtilsError {
-    fn from(value: cfgparser_encryption::xor::engine::XORCipherError) -> Self {
-        UtilsError::DecryptorCreation(value.to_string())
+    fn from(err: cfgparser_encryption::xor::engine::XORCipherError) -> Self {
+        UtilsError::DecryptorCreation(err.to_string())
+    }
+}
+
+impl From<cfgparser_encryption::DynamicCipherError> for UtilsError {
+    fn from(err: cfgparser_encryption::DynamicCipherError) -> Self {
+        UtilsError::DecryptorCreation(err.to_string())
     }
 }
 
