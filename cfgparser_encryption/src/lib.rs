@@ -113,8 +113,8 @@ pub trait Decryptor {
     fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>, Self::Error>;
 }
 
-/// generic trait designed to describe a structure that can decrypt
-/// ciphertext during a configuration extraction.
+/// generic trait designed to describe a structure that can encrypt
+/// ciphertext during a configuration obfuscation.
 pub trait Encryptor {
     type Error: std::error::Error;
 
