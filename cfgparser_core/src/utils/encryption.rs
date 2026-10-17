@@ -1,3 +1,5 @@
+use super::*;
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -6,7 +8,7 @@ mod unit_tests;
 pub fn get_decryptor(
     key: &[u8],
     enc_type_i32: i32,
-) -> Result<cfgparser_encryption::DynamicCipher, Box<dyn std::error::Error>> {
+) -> UtilsResult<cfgparser_encryption::DynamicCipher> {
     // transform the i32 encryption type definition into a cfgparser_encryption
     // encryption type to use for the match statement.
     let enc_type: cfgparser_encryption::EncryptionType =
