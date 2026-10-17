@@ -8,6 +8,8 @@ pub mod aes;
 pub mod viginere;
 pub mod xor;
 
+pub type CipherResult<T, E = DynamicCipherError> = Result<T, E>;
+
 pub enum DynamicCipher {
     AES(aes::engine::AESCipher),
     XOR(xor::engine::XORCipher),
@@ -63,7 +65,7 @@ impl std::error::Error for EncryptionTypeError {}
 impl TryFrom<i32> for EncryptionType {
     type Error = EncryptionTypeError;
 
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
+    fn try_from(value: i32) -> CipherResult<Self, Self::Error> {
         match value {
             aes if aes == EncryptionType::Aes as i32 => Ok(EncryptionType::Aes),
             vig if vig == EncryptionType::Viginere as i32 => Ok(EncryptionType::Viginere),
@@ -84,7 +86,7 @@ pub trait Decryptor {
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (ciphertext in, plaintext out)
     /// should be consistent.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>, Self::Error>;
 }
 
 /// generic trait designed to describe a structure that can decrypt
@@ -98,13 +100,13 @@ pub trait Encryptor {
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (plaintext in, ciphertext out)
     /// should be consistent.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>, Self::Error>;
 }
 
 impl Decryptor for DynamicCipher {
     type Error = DynamicCipherError;
 
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>> {
         match self {
             DynamicCipher::AES(cipher) => Ok(cipher
                 .decrypt(ciphertext)
