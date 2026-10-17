@@ -42,7 +42,7 @@ impl<'build_life> XORCipherBuilder<'build_life> {
         self
     }
 
-    pub fn build(self) -> Result<XORCipher, XORCipherError> {
+    pub fn build(self) -> crate::CipherResult<XORCipher, XORCipherError> {
         let key: &[u8] = match self.key {
             Some(key) => key,
             None => &[],
@@ -53,7 +53,7 @@ impl<'build_life> XORCipherBuilder<'build_life> {
 }
 
 impl XORCipher {
-    pub fn new(key: Vec<u8>) -> Result<XORCipher, XORCipherError> {
+    pub fn new(key: Vec<u8>) -> crate::CipherResult<XORCipher, XORCipherError> {
         if key.len() < 1 {
             return Err(XORCipherError::EmptyKey);
         }
@@ -68,7 +68,7 @@ impl crate::Decryptor for XORCipher {
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in ciphertext and the XORCipher's key.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn decrypt(&self, ciphertext: &[u8]) -> crate::CipherResult<Vec<u8>, Self::Error> {
         Ok(encrypt_decrypt(&self.key, ciphertext))
     }
 }
@@ -80,7 +80,7 @@ impl crate::Encryptor for XORCipher {
     ///
     /// this will call the encrypt_decrypt function with the
     /// passed in plaintext and the XORCipher's key.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn encrypt(&self, plaintext: &[u8]) -> crate::CipherResult<Vec<u8>, Self::Error> {
         Ok(encrypt_decrypt(&self.key, plaintext))
     }
 }

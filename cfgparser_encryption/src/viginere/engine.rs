@@ -60,7 +60,7 @@ pub fn is_valid_key(key: &[u8]) -> bool {
 }
 
 impl ViginereCipher {
-    pub fn new(key: Vec<u8>) -> Result<ViginereCipher, ViginerCipherError> {
+    pub fn new(key: Vec<u8>) -> crate::CipherResult<ViginereCipher, ViginerCipherError> {
         if !is_valid_key(&key) {
             return Err(ViginerCipherError::InvalidKey);
         }
@@ -79,7 +79,7 @@ impl<'build_life> ViginereCipherBuilder<'build_life> {
         self
     }
 
-    pub fn build(self) -> Result<ViginereCipher, ViginerCipherError> {
+    pub fn build(self) -> crate::CipherResult<ViginereCipher, ViginerCipherError> {
         let key: &[u8] = match self.key {
             Some(k) => k,
             None => return Err(ViginerCipherError::NoKey),
@@ -96,7 +96,7 @@ impl crate::Decryptor for ViginereCipher {
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn decrypt(&self, ciphertext: &[u8]) -> crate::CipherResult<Vec<u8>, Self::Error> {
         // let mut plaintext: Vec<u8> = vec![];
         let len_key = self.key.len();
         let rev: bool = true;
@@ -130,7 +130,7 @@ impl crate::Encryptor for ViginereCipher {
     ///
     /// this will take in plaintext and a key and rotate each letter
     /// in the plaintext using the associated key character.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn encrypt(&self, plaintext: &[u8]) -> crate::CipherResult<Vec<u8>, Self::Error> {
         let len_key = self.key.len();
         let rev: bool = false;
 
