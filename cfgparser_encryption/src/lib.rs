@@ -11,6 +11,7 @@ pub mod xor;
 pub type CipherResult<T, E = DynamicCipherError> = Result<T, E>;
 
 pub enum DynamicCipher {
+    #[cfg(feature = "aes")]
     AES(aes::engine::AESCipher),
     XOR(xor::engine::XORCipher),
     Viginere(viginere::engine::ViginereCipher),
@@ -18,6 +19,7 @@ pub enum DynamicCipher {
 
 #[derive(Debug)]
 pub enum DynamicCipherError {
+    #[cfg(feature = "aes")]
     AES(aes::engine::AESError),
     Viginere(viginere::engine::ViginerCipherError),
     XOR(xor::engine::XORCipherError),
@@ -27,6 +29,7 @@ pub enum DynamicCipherError {
 impl std::fmt::Display for DynamicCipherError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            #[cfg(feature = "aes")]
             DynamicCipherError::AES(e) => write!(f, "AES Error: {}", e),
             DynamicCipherError::Viginere(e) => write!(f, "Viginere Error: {}", e),
             DynamicCipherError::XOR(e) => write!(f, "XOR Error: {}", e),
@@ -37,6 +40,7 @@ impl std::fmt::Display for DynamicCipherError {
 
 impl std::error::Error for DynamicCipherError {}
 
+#[cfg(feature = "aes")]
 impl From<aes::engine::AESError> for DynamicCipherError {
     fn from(err: aes::engine::AESError) -> Self {
         DynamicCipherError::AES(err)
@@ -62,6 +66,7 @@ pub enum EncryptionType {
     #[default]
     Xor,
     Viginere,
+    #[cfg(feature = "aes")]
     Aes,
 }
 
@@ -83,8 +88,9 @@ impl std::error::Error for EncryptionTypeError {}
 impl TryFrom<i32> for EncryptionType {
     type Error = EncryptionTypeError;
 
-    fn try_from(value: i32) -> CipherResult<Self, Self::Error> {
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
         match value {
+            #[cfg(feature = "aes")]
             aes if aes == EncryptionType::Aes as i32 => Ok(EncryptionType::Aes),
             vig if vig == EncryptionType::Viginere as i32 => Ok(EncryptionType::Viginere),
             xor if xor == EncryptionType::Xor as i32 => Ok(EncryptionType::Xor),
@@ -126,6 +132,7 @@ impl Decryptor for DynamicCipher {
 
     fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>> {
         match self {
+            #[cfg(feature = "aes")]
             DynamicCipher::AES(cipher) => Ok(cipher.decrypt(ciphertext)?),
             DynamicCipher::Viginere(cipher) => Ok(cipher.decrypt(ciphertext)?),
             DynamicCipher::XOR(cipher) => Ok(cipher.decrypt(ciphertext)?),
@@ -138,6 +145,7 @@ impl Encryptor for DynamicCipher {
 
     fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>> {
         match self {
+            #[cfg(feature = "aes")]
             DynamicCipher::AES(cipher) => Ok(cipher.encrypt(plaintext)?),
             DynamicCipher::Viginere(cipher) => Ok(cipher.encrypt(plaintext)?),
             DynamicCipher::XOR(cipher) => Ok(cipher.encrypt(plaintext)?),
