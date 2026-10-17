@@ -132,3 +132,15 @@ impl Decryptor for DynamicCipher {
         }
     }
 }
+
+impl Encryptor for DynamicCipher {
+    type Error = DynamicCipherError;
+
+    fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>> {
+        match self {
+            DynamicCipher::AES(cipher) => Ok(cipher.encrypt(plaintext)?),
+            DynamicCipher::Viginere(cipher) => Ok(cipher.encrypt(plaintext)?),
+            DynamicCipher::XOR(cipher) => Ok(cipher.encrypt(plaintext)?),
+        }
+    }
+}
