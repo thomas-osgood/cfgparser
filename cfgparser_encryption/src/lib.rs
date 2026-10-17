@@ -37,6 +37,24 @@ impl std::fmt::Display for DynamicCipherError {
 
 impl std::error::Error for DynamicCipherError {}
 
+impl From<aes::engine::AESError> for DynamicCipherError {
+    fn from(err: aes::engine::AESError) -> Self {
+        DynamicCipherError::AES(err)
+    }
+}
+
+impl From<viginere::engine::ViginerCipherError> for DynamicCipherError {
+    fn from(err: viginere::engine::ViginerCipherError) -> Self {
+        DynamicCipherError::Viginere(err)
+    }
+}
+
+impl From<xor::engine::XORCipherError> for DynamicCipherError {
+    fn from(err: xor::engine::XORCipherError) -> Self {
+        DynamicCipherError::XOR(err)
+    }
+}
+
 #[derive(Default, Debug)]
 /// enum defining the various forms of encryption that are supported
 /// by this library.
@@ -108,15 +126,9 @@ impl Decryptor for DynamicCipher {
 
     fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>> {
         match self {
-            DynamicCipher::AES(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::AES)?),
-            DynamicCipher::Viginere(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::Viginere)?),
-            DynamicCipher::XOR(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::XOR)?),
+            DynamicCipher::AES(cipher) => Ok(cipher.decrypt(ciphertext)?),
+            DynamicCipher::Viginere(cipher) => Ok(cipher.decrypt(ciphertext)?),
+            DynamicCipher::XOR(cipher) => Ok(cipher.decrypt(ciphertext)?),
         }
     }
 }
