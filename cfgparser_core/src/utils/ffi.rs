@@ -1,6 +1,10 @@
 #[cfg(test)]
 mod unit_tests;
 
+/// if no key is specified, this will be used
+/// as the key in the `convert_key_from_c` function.
+const DEFAULT_KEY: &'static [u8; 1] = b"q";
+
 pub struct FfiParams {
     pub key: Vec<u8>,
     pub enc_type_i32: i32,
@@ -13,7 +17,7 @@ pub fn convert_key_from_c(raw_key: &*const std::ffi::c_char) -> Vec<u8> {
     // if null is passed in as the key, use q as the default;
     // otherwise use the char* key passed in.
     if raw_key.is_null() {
-        return "q".as_bytes().to_vec();
+        return DEFAULT_KEY.to_vec();
     }
 
     // convert the input to a CStr.
