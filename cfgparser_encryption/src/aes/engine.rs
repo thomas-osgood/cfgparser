@@ -1,6 +1,8 @@
 use aes_gcm::aead::{Aead, AeadCore, KeyInit};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
+use crate::CipherResult;
+
 #[cfg(test)]
 mod unit_tests;
 
@@ -71,7 +73,7 @@ impl<'build_life> AESCipherBuilder<'build_life> {
 
     /// validate the cipher options, then build and return
     /// an AESCipher.
-    pub fn build(self) -> Result<AESCipher, AESError> {
+    pub fn build(self) -> CipherResult<AESCipher, AESError> {
         let key: &[u8] = match self.key {
             Some(key) => key,
             None => return Err(AESError::EmptyKey),
@@ -82,14 +84,14 @@ impl<'build_life> AESCipherBuilder<'build_life> {
 }
 
 impl AESCipher {
-    pub fn new(key: Vec<u8>) -> Result<AESCipher, AESError> {
+    pub fn new(key: Vec<u8>) -> CipherResult<AESCipher, AESError> {
         validate_key(&key)?;
         Ok(AESCipher { key })
     }
 
     /// function designed to update the key used for encryption
     /// and decryption by the AESCipher.
-    pub fn update_key(&mut self, key: Vec<u8>) -> Result<(), AESError> {
+    pub fn update_key(&mut self, key: Vec<u8>) -> CipherResult<(), AESError> {
         validate_key(&key)?;
         // zero out the old key data before update for
         // security best practices.
@@ -102,7 +104,7 @@ impl AESCipher {
 impl crate::Decryptor for AESCipher {
     type Error = AESError;
 
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>, Self::Error> {
         // split the encrypted data into nonce and cipherbytes. this
         // will extract the nonce that will be used to decrypt the data
         // and the cipherbytes that will be decrypted.
@@ -141,7 +143,7 @@ impl crate::Decryptor for AESCipher {
 impl crate::Encryptor for AESCipher {
     type Error = AESError;
 
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>, Self::Error> {
         let mut ciphertext: Vec<u8>;
         let encrypt_result = match self.key.len() {
             KEYLEN_128 => {

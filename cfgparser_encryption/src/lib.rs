@@ -8,7 +8,10 @@ pub mod aes;
 pub mod viginere;
 pub mod xor;
 
+pub type CipherResult<T, E = DynamicCipherError> = Result<T, E>;
+
 pub enum DynamicCipher {
+    #[cfg(feature = "aes")]
     AES(aes::engine::AESCipher),
     XOR(xor::engine::XORCipher),
     Viginere(viginere::engine::ViginereCipher),
@@ -16,6 +19,7 @@ pub enum DynamicCipher {
 
 #[derive(Debug)]
 pub enum DynamicCipherError {
+    #[cfg(feature = "aes")]
     AES(aes::engine::AESError),
     Viginere(viginere::engine::ViginerCipherError),
     XOR(xor::engine::XORCipherError),
@@ -25,6 +29,7 @@ pub enum DynamicCipherError {
 impl std::fmt::Display for DynamicCipherError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            #[cfg(feature = "aes")]
             DynamicCipherError::AES(e) => write!(f, "AES Error: {}", e),
             DynamicCipherError::Viginere(e) => write!(f, "Viginere Error: {}", e),
             DynamicCipherError::XOR(e) => write!(f, "XOR Error: {}", e),
@@ -35,6 +40,25 @@ impl std::fmt::Display for DynamicCipherError {
 
 impl std::error::Error for DynamicCipherError {}
 
+#[cfg(feature = "aes")]
+impl From<aes::engine::AESError> for DynamicCipherError {
+    fn from(err: aes::engine::AESError) -> Self {
+        DynamicCipherError::AES(err)
+    }
+}
+
+impl From<viginere::engine::ViginerCipherError> for DynamicCipherError {
+    fn from(err: viginere::engine::ViginerCipherError) -> Self {
+        DynamicCipherError::Viginere(err)
+    }
+}
+
+impl From<xor::engine::XORCipherError> for DynamicCipherError {
+    fn from(err: xor::engine::XORCipherError) -> Self {
+        DynamicCipherError::XOR(err)
+    }
+}
+
 #[derive(Default, Debug)]
 /// enum defining the various forms of encryption that are supported
 /// by this library.
@@ -42,6 +66,7 @@ pub enum EncryptionType {
     #[default]
     Xor,
     Viginere,
+    #[cfg(feature = "aes")]
     Aes,
 }
 
@@ -65,6 +90,7 @@ impl TryFrom<i32> for EncryptionType {
 
     fn try_from(value: i32) -> Result<Self, Self::Error> {
         match value {
+            #[cfg(feature = "aes")]
             aes if aes == EncryptionType::Aes as i32 => Ok(EncryptionType::Aes),
             vig if vig == EncryptionType::Viginere as i32 => Ok(EncryptionType::Viginere),
             xor if xor == EncryptionType::Xor as i32 => Ok(EncryptionType::Xor),
@@ -84,11 +110,11 @@ pub trait Decryptor {
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (ciphertext in, plaintext out)
     /// should be consistent.
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>, Self::Error>;
 }
 
-/// generic trait designed to describe a structure that can decrypt
-/// ciphertext during a configuration extraction.
+/// generic trait designed to describe a structure that can encrypt
+/// ciphertext during a configuration obfuscation.
 pub trait Encryptor {
     type Error: std::error::Error;
 
@@ -98,23 +124,31 @@ pub trait Encryptor {
     /// this function's logic will differ between the various implementations
     /// of the trait, but the overall process (plaintext in, ciphertext out)
     /// should be consistent.
-    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>, Self::Error>;
 }
 
 impl Decryptor for DynamicCipher {
     type Error = DynamicCipherError;
 
-    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn decrypt(&self, ciphertext: &[u8]) -> CipherResult<Vec<u8>> {
         match self {
-            DynamicCipher::AES(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::AES)?),
-            DynamicCipher::Viginere(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::Viginere)?),
-            DynamicCipher::XOR(cipher) => Ok(cipher
-                .decrypt(ciphertext)
-                .map_err(DynamicCipherError::XOR)?),
+            #[cfg(feature = "aes")]
+            DynamicCipher::AES(cipher) => Ok(cipher.decrypt(ciphertext)?),
+            DynamicCipher::Viginere(cipher) => Ok(cipher.decrypt(ciphertext)?),
+            DynamicCipher::XOR(cipher) => Ok(cipher.decrypt(ciphertext)?),
+        }
+    }
+}
+
+impl Encryptor for DynamicCipher {
+    type Error = DynamicCipherError;
+
+    fn encrypt(&self, plaintext: &[u8]) -> CipherResult<Vec<u8>> {
+        match self {
+            #[cfg(feature = "aes")]
+            DynamicCipher::AES(cipher) => Ok(cipher.encrypt(plaintext)?),
+            DynamicCipher::Viginere(cipher) => Ok(cipher.encrypt(plaintext)?),
+            DynamicCipher::XOR(cipher) => Ok(cipher.encrypt(plaintext)?),
         }
     }
 }
