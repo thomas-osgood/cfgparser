@@ -40,6 +40,27 @@ impl std::fmt::Display for DynamicCipherError {
 
 impl std::error::Error for DynamicCipherError {}
 
+impl DynamicCipher {
+    pub fn new(enc_type: EncryptionType, key: &[u8]) -> CipherResult<Self> {
+        match enc_type {
+            #[cfg(feature = "aes")]
+            EncryptionType::Aes => {
+                let cipher: aes::engine::AESCipher = aes::engine::AESCipher::new(key.to_vec())?;
+                Ok(DynamicCipher::AES(cipher))
+            }
+            EncryptionType::Viginere => {
+                let cipher: viginere::engine::ViginereCipher =
+                    viginere::engine::ViginereCipher::new(key.to_vec())?;
+                Ok(DynamicCipher::Viginere(cipher))
+            }
+            EncryptionType::Xor => {
+                let cipher: xor::engine::XORCipher = xor::engine::XORCipher::new(key.to_vec())?;
+                Ok(DynamicCipher::XOR(cipher))
+            }
+        }
+    }
+}
+
 #[cfg(feature = "aes")]
 impl From<aes::engine::AESError> for DynamicCipherError {
     fn from(err: aes::engine::AESError) -> Self {
