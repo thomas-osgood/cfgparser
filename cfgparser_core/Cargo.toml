@@ -1,7 +1,10 @@
 [package]
 name = "cfgparser_core"
-version = "0.9.5"
-edition = "2021"
+description = "module holding core business logic for cfgparser"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
 
 [lib]
 crate-type = ["cdylib", "staticlib", "lib"]
@@ -10,8 +13,8 @@ crate-type = ["cdylib", "staticlib", "lib"]
 default = ["cfgparser_encryption/aes"]
 
 [dependencies]
+cfgparser_encryption.workspace = true
 base64 = "0.22.1"
-cfgparser_encryption = { path = "../cfgparser_encryption" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 

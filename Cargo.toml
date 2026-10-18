@@ -1,3 +1,24 @@
 [workspace]
 members = ["cfgparser_core", "cfgparser_encryption"]
 resolver = "2"
+
+[workspace.package]
+authors = ["thomas-osgood"]
+description = "library designed to handle extraction of configuration embedded in a binary or byte stream"
+version = "0.9.6"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+cfgparser_encryption = { version = "0.9.6", path = "cfgparser_encryption" }
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3          # Maximum optimizations for speed
+lto = true             # Link-Time Optimization across crates for smaller size and better speed
+codegen-units = 1      # Maximizes LTO efficiency (though trades off some compile time)
+strip = true           # Automatically strips debug symbols from the binary to reduce size
+panic = "abort"        # Removes unwinding bloat for smaller binary footprint and faster panic handling
